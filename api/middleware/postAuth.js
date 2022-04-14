@@ -5,29 +5,30 @@ const { Role } = require('../model/rolesSchema');
 class postAuth {
     
     rolesAuth = async (req, res,next) => {
-        var roleid, policies = [];
+        var roleid, role, policies = [];
         await User.find({
             email: { $in: req.isemail }
         }).then(result => {
             if(result==""){
                 return res.status(404).json({error:true,message:" user not exists"});
             }
-            const roleid = result[0].roleid;
-            const role=result[0].role;
-            //console.log(roleid);
+           // console.log(result);
+             roleid = result[0].roleid;
+             role=result[0].role;
+          //  console.log(roleid);
         }).catch(err => {
 
             return res.status(500).json({ error:true,message: err.message });
         });
-        await Role.find ({
-            _id: { $in: roleid }
-        }).then(result => {
+       // await Role.find().then(result=>{console.log(result);})
+      //  console.log(roleid);
+        await Role.findOne ({_id:roleid }).then(result => {
             console.log(result);
-            if(result==""){
+            if(result==null){
                 return res.status(404).json({error:true,message:"role not exists"});
             }
            
-            const policies = result[0].policies;
+            const policies = result.policies;
             req.policies = policies;
             next();
     
@@ -98,6 +99,27 @@ class postAuth {
             }
         } f();
     }
+
+    
+    logedinUser = (req, res, next) => {
+        User.findOne({ email: req.isemail },).then((data) => {
+            if (data == null) {
+                return res.status(404).json({ msg: "user not found" });
+            }
+            else {
+                if (data['token'] == "") {
+                    return res.status(401).json({ msg: "not a valid user / logged out" });
+                }
+                else {
+                    next();
+                }
+            }
+        }).catch(err => {
+            return res.status(500).json({ msg: err.message });
+        });
+    }
+    
+
 
 }
 module.exports = { postAuth };
