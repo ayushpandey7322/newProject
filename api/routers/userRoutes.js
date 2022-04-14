@@ -7,12 +7,12 @@ const  userControllers  = require('../controllers/userControllers');
 const user = new userControllers;
 
 
-router.get("/users", Auth.verifyToken, Auth.rolesAuth, user.index);
-router.get('/me',  Auth.verifyToken, Auth.rolesAuth, user.me);
-router.get('/users/:id',  Auth.verifyToken, Auth.rolesAuth, user.show);
+router.get("/users", Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.index);
+router.get('/me',  Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.me);
+router.get('/users/:id',  Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.show);
 
-router.put('/users/:id', Auth.personalAuth, Auth.verifyToken, Auth.rolesAuth, user.update);
-router.put('/updatePassword/:id', Auth.personalAuth, Auth.verifyToken, Auth.rolesAuth, user.updatePassword);
-router.delete('/users:id', Auth.verifyToken, Auth.rolesAuth, user.destroy);
+router.put('/users/:id', Auth.personalAuth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.update);
+router.put('/updatePassword/:id', Auth.personalAuth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.updatePassword);
+router.delete('/users:id', Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.destroy);
 
 module.exports =  router;
