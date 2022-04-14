@@ -108,13 +108,21 @@ updateUsers = (req, res) => {
 
     User.findOne({ _id: req.params.id },).then(async(data) => {
 
-        if (data.roleid == 0 && !req.policies.includes("update_admin")) {
+        if (data.roleid == 0 && !req.policies.includes("update_superadmin")) {
+
+
 
             return res.status(404).json({ error: true, message: "unauthorized access" });
-        }
-        if (data.roleid == 2 && !req.policies.includes("update_user")) {
+            }
+            if (data.roleid == 1 && !req.policies.includes("update_admin")) {
+            
+            
+            
             return res.status(404).json({ error: true, message: "unauthorized access" });
-        }
+            }
+            if (data.roleid == 2 && !req.policies.includes("update_user")) {
+            return res.status(404).json({ error: true, message: "unauthorized access" });
+            }
 
         if (data == null) {
             res.status(404).json({ error: true, message: "user not exists" });
@@ -303,9 +311,7 @@ register = async (req, res) => {
 
 
 login = (req, res) => {
-        if (!req.policies.includes("login_user")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
-        }
+
     User.find({ email: req.body.email }).then(user => {
         let answer = validations.loginValidations.validate(req.body);
         if (answer.error) {
@@ -352,9 +358,7 @@ login = (req, res) => {
 
 
 logout = function (req, res) {
-        if (!req.policies.includes("logout_user")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
-        }
+
     User.findOne({ email: req.isemail }).then((data) => {
         if (data['token'] == "") {
             res.status(401).json({ error:true,message: "already logged out" });

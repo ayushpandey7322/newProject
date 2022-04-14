@@ -3,7 +3,7 @@ const { Post } = require('../model/postSchema');
 
 require('dotenv').config();
 
-const {  postValidation} = require('../validations/PostValidation');
+const {  postValidation} = require('../validations/postValidation');
 const validation = new postValidation;
 
 class postControllers {

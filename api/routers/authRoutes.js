@@ -9,8 +9,8 @@ const user = new authControllers;
 
 
 router.post('/register',user.register)
-router.post('/login', Auth.verifyToken, Auth.rolesAuth, user.login);
-router.post("/logout", Auth.verifyToken, Auth.rolesAuth, Auth.verifyToken, user.logout);
+router.post('/login', user.login);
+router.post("/logout", Auth.verifyToken, user.logout);
 router.post('/createUsers', Auth.verifyToken, Auth.rolesAuth, user.createUsers);
 router.put('/updateUsers/:id', Auth.verifyToken, Auth.rolesAuth, user.updateUsers);
 
