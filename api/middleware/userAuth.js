@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { User } = require('../model/userSchema');
 const { Role } = require('../model/rolesSchema');
+const { Policy } = require('../model/policySchema');
 class userAuth {
 
 
@@ -11,19 +12,34 @@ class userAuth {
         await User.find({
             email: { $in: req.isemail }
         }).then(result => {
-            roleid = result[0].roleid;
+            if(result==""){
+                return res.status(404).json({error:true,message:" user not exists"});
+            }
+            const roleid = result[0].roleid;
+            const role=result[0].role;
             //console.log(roleid);
-        })
+        }).catch(err => {
 
-        await Role.find({
+            return res.status(500).json({ error:true,message: err.message });
+        });
+        await Role.find ({
             _id: { $in: roleid }
         }).then(result => {
-            policies = result[0].policies;
+            console.log(result);
+            if(result==""){
+                return res.status(404).json({error:true,message:"role not exists"});
+            }
+           
+            const policies = result[0].policies;
+            req.policies = policies;
+            next();
+    
             
-        })
-        req.policies = policies;
-        next();
+        }).catch(err => {
 
+            return res.status(500).json({ error:true,message: err.message });
+        });
+       
     }
 
 
