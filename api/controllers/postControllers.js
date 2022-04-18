@@ -50,6 +50,8 @@ class postControllers {
             ]
         }
         ).then(post => {
+            if (post == "")
+                return res.status(404).json({ error: false, message: "no post to show" });
             return res.status(200).json({ error:false,data: post });
      
         }).catch(err => {
@@ -118,7 +120,7 @@ class postControllers {
                         { upsert: true }).then(result => { res.status(200).json({ error:false,message: "successfully deleted" }) });
                 }
                 else {
-                    return res.status(404).json({ error:fasle,message: "this user can't delete this post" });
+                    return res.status(404).json({ error:false,message: "this user can't delete this post" });
                 }
             }
         }).catch(err => {

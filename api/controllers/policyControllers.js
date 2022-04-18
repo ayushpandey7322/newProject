@@ -1,14 +1,16 @@
 const { Policy } = require('../model/policySchema');
+const { Role } = require('../model/rolesSchema');
 require('dotenv').config();
 const policyValidations = require('../validations/policyValidation');
 const validations = new policyValidations;
 
 class policyControllers {
-    store = (req, res) => {
+    store = async (req, res) => {
+        
         if (!req.policies.includes("create_policy")) {
             return res.status(404).json({ error: true, message: "unauthorized access" });
         }
-        Policy.findOne({ name: req.body.name }).then ((data) => {
+        await Policy.findOne({ name: req.body.name }).then (async(data) => {
             if (data != null) {
                 return res.status(404).json({ error:true,message: 'policy exist' });
             }
@@ -21,12 +23,21 @@ class policyControllers {
                     display_name: req.body.display_name,
                     description: req.body.description
                 });
-                policy.save().then(result => {
-
+            let id,name;
+               await policy.save().then(result => {
+                  id = policy._id;
+                  name = policy.name;
                     return res.status(201).json({ error:false,data: result })
 
                 }).catch(err => { return res.status(500).json({ error:true,message: err.message }) });
-            
+            await Role.findOne({ role: "superadmin" }).then(data => {
+                if (data == null)
+                    res.status(404).json({ error: true, message: "role not exists" });
+                data.policyid.push(id);
+                data.policies.push(name);
+                data.save();
+              
+            })
            
         }).catch(err => {
 
@@ -59,7 +70,7 @@ class policyControllers {
 
             if (data.length == 0) {
 
-                return res.status(404).json({ error:true,message: "no policy with such query" });
+                return res.status(404).json({ error:false,message: "no policy with such query" });
             }
             return res.json({ error:false,data: data });
         }).catch(err => {
