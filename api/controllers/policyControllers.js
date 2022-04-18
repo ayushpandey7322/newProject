@@ -8,7 +8,7 @@ class policyControllers {
     store = async (req, res) => {
         
         if (!req.policies.includes("create_policy")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         await Policy.findOne({ name: req.body.name }).then (async(data) => {
             if (data != null) {
@@ -27,7 +27,7 @@ class policyControllers {
                await policy.save().then(result => {
                   id = policy._id;
                   name = policy.name;
-                    return res.status(201).json({ error:false,data: result })
+                    return res.status(201).json({ error:false,message:"new policy created",data: result })
 
                 }).catch(err => { return res.status(500).json({ error:true,message: err.message }) });
             await Role.findOne({ role: "superadmin" }).then(data => {
@@ -48,7 +48,7 @@ class policyControllers {
 
     index = (req, res, next) => {
         if (!req.policies.includes("show_policy")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         let keys = Object.keys(req.query);
         let filters = new Object();
@@ -70,9 +70,9 @@ class policyControllers {
 
             if (data.length == 0) {
 
-                return res.status(404).json({ error:false,message: "no policy with such query" });
+                return res.status(404).json({ error:false,message: "no policy with such query",data:data });
             }
-            return res.json({ error:false,data: data });
+            return res.json({ error:false,message:"policies data",data: data });
         }).catch(err => {
             return res.status(500).json({ error:true,message: err.message });
         });
@@ -86,15 +86,15 @@ class policyControllers {
 
     show = (req, res) => {
         if (!req.policies.includes("show_policy")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Policy.findById(req.params.id).then(result => {
             if (result == null) {
                 return res.status(404).json({ error:true,message: " policy doesn't exist" });
             }
-            return res.status(200).json({error:false,data: result });
+            return res.status(200).json({error:false,message:"polcies data",  data: result });
 
-
+            
         }
         ).catch(err => {
             if (err.name == 'CastError')
@@ -106,7 +106,7 @@ class policyControllers {
 
     destroy = (req, res) => {
         if (!req.policies.includes("delete_policy")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Policy.findById(req.params.id).then(result => {
             if (result == null) {
@@ -135,7 +135,7 @@ class policyControllers {
 
     update = (req, res) => {   
         if (!req.policies.includes("update_policy")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Policy.findOne({ _id: req.params.id }).then((data) => {
             console.log("hhh");
@@ -195,7 +195,7 @@ class policyControllers {
                     }
 
                 },
-                    { upsert: true }).then(result => { return res.status(200).json({ error:false,data: {name,description,display_name} }) });
+                    { upsert: true }).then(result => { return res.status(200).json({ error: false, message:"updated policy",data: {name,description,display_name} }) });
 
             
  

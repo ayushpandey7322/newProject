@@ -9,7 +9,7 @@ const validations = new rolesValidations;
 class rolesControllers {
     store = async (req, res) => {
         if (!req.policies.includes("create_role")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Role.findOne({ name: req.body.name }).then (async(data) => {
             if (data == null) {
@@ -71,7 +71,7 @@ class rolesControllers {
 
                     role.save().then(result => {
 
-                        return res.status(200).json({ error: false, data: result });
+                        return res.status(200).json({ error: false, message:"new role created",data: result });
 
                     }
                     ).catch(err => { return res.status(500).json({ error:true,message: err.message }) });
@@ -87,7 +87,7 @@ class rolesControllers {
 
     index = (req, res, next) => {
         if (!req.policies.includes("show_role")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         let keys = Object.keys(req.query);
         let filters = new Object();
@@ -103,9 +103,9 @@ class rolesControllers {
 
             if (data.length == 0) {
 
-                return res.status(404).json({ error:false,message: "no role with such query" });
+                return res.status(404).json({ error:false,message: "no role with such query",data:data });
             }
-            return res.status(200).json({ error:false,data: data });
+            return res.status(200).json({ error:false,message:"roles data",data: data });
         }).catch(err => {
             return res.status(500).json({ error:true,message: err.message });
         });
@@ -119,13 +119,13 @@ class rolesControllers {
 
     show = (req, res) => {
         if (!req.policies.includes("show_role")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Role.findById(req.params.id).then(result => {
             if (result == null) {
                 return res.status(404).json({ error:true,message: " role doesn't exist" });
             }
-            return res.status(200).json({ error:false,data: result });
+            return res.status(200).json({ error:false,message:"role data",data: result });
         }
         ).catch(err => {
             if (err.name == 'CastError')
@@ -137,7 +137,7 @@ class rolesControllers {
 
     destroy = (req, res) => {
         if (!req.policies.includes("delte_role")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Role.findById(req.params.id).then(result => {
             if (result == null) {
@@ -166,7 +166,7 @@ class rolesControllers {
 
     update = async (req, res) => {  
         if (!req.policies.includes("update_role")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Role.findOne({ _id: req.params.id },).then(async(data) => {
 
@@ -275,7 +275,7 @@ class rolesControllers {
                         }
 
                     },
-                        { upsert: true }).then(result => { res.status(200).json({ error:false,data: {name,display_name,policyid,policies} }) });
+                        { upsert: true }).then(result => { res.status(200).json({ error:false,message:"updated role",data: {name,display_name,policyid,policies} }) });
               
             }
        

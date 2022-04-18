@@ -40,6 +40,7 @@ class postAuth {
     }
 
     verifyToken = (req, res, next) => {
+        console.log("verify");
         try {
             const token = req.headers.authorization.split(" ")[1];
             const verify = jwt.verify(token, process.env.TOKEN);
@@ -66,9 +67,16 @@ class postAuth {
       
             try {
                 let isemail;
+                console.log(req.headers.authorization);
+                //if (req.headers.authorization == "")
+                //    return res.status(404).json({ msg: "not a valid token" });
                 const token = req.headers.authorization.split(" ")[1];   
                 const verify = jwt.verify(token, process.env.TOKEN);
-               await User.findOne({ email: verify.email }).then((data) => {
+                console.log(verify.email);
+                await User.findOne({ email: verify.email }).then((data) => {
+                    console.log(data);
+                    if (data == null)
+                        return res.status(401).json({ error: true, message: "user not exists" });
                    if (data['token'] == "") {
                         return res.status(401).json({ error:true,message: "already logged out" });
                     }
@@ -77,16 +85,15 @@ class postAuth {
                         isemail = data.email;
                         req.isid = data._id;
                     }
+                    if ( verify.email == isemail) {
+                        next();
+                    } else {
+
+                        return res.status(401).json({ error: true, messsage: "not a verified user  " });
+                    }
                }).catch(err => {
                    return res.status(500).json({ eror:true,message: err.message });
                });
-            
-                if (verify.email == isemail) {                                                                           
-                    next();
-                } else { 
-                    
-                    return res.status(401).json({ error:true,messsage: "not a verified user  " });
-                }
             } catch (error) {
           
                 if (error.name != "TokenExpiredError") {
