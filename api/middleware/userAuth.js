@@ -7,7 +7,8 @@ class userAuth {
 
 
 
-    rolesAuth = async (req, res,next) => {
+    rolesAuth = async (req, res, next) => {
+        console.log("adf");
         var roleid, role, policies = [];
         await User.find({
             email: { $in: req.isemail }
@@ -78,6 +79,7 @@ class userAuth {
     
 
     verifyToken = (req, res, next) => {    
+        console.log("a");
         try {
             const token = req.headers.authorization.split(" ")[1];  
             const verify = jwt.verify(token, process.env.TOKEN);

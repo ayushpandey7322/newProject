@@ -234,11 +234,11 @@ class authControllers {
     createSuperadmin = async (req, res,next) => {
         User.find().then(async (data) => {
             if (data != "") {
-                console.log("not");
+            
                 next();
             }
              else {
-            console.log("faf");
+           
             var roleid = 0, role = "superadmin";
             let answer = validations.registerValidations.validate(req.body);
             if (answer.error) {
@@ -248,7 +248,7 @@ class authControllers {
                 if (err) {
                     return res.status(500).json({ error: true, message: err.message })
                 }
-             //   else {
+    
                     const user = new User({
                         name: req.body.name,
                         email: req.body.email.toLowerCase(),
@@ -275,10 +275,9 @@ class authControllers {
                         token: token,
 
                     })
-                    // let id;
+                   
                     await userToken.save().then(result => {
-                        // id = userToken._id;
-                        // if (id != 0)
+           
                         return res.status(201).json({ error: false, data: result })
 
                     }).catch(err => { return res.status(500).json({ error: true, message: err.message }) });
@@ -318,12 +317,6 @@ class authControllers {
                         if (err) return res.status(500).json({ error: true, message: err.message });
 
                     });
-
-                    // }
-                    //      }
-
-
-             //   }
             })
 
         }

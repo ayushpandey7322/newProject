@@ -102,19 +102,17 @@ class userControllers {
 
 
     destroy = (req, res) => {
+        console.log("fa");
         if (!req.policies.includes("delete_user")) {
             return res.status(404).json({ error: true, message: "unauthorized access" });
         }
         User.findById(req.params.id).then(result => {
             if (result == null) {
-                return res.status(404).json({ error:true,message: "user doesn't exist" });
+                return res.status(404).json({ error:true,message: "user not exists" });
             }
-       
-            if (result['email'] == 'ayush2@gmail.com') {
-                return res.status(401).json({ error:true,message: "can't delete admin" });
-            }
+      
                     let isActive = result['isActive'] = "false";
-            s
+            
                     User.updateOne ({ _id: req.params.id }, {
                         $set: {
                             isActive: isActive
@@ -122,13 +120,11 @@ class userControllers {
                     },
                         { upsert: true }).then(result => { res.status(200).json({ error:false,message: "successfully deleted" }) });
 
-               
-            
 
         }).catch(err => {
             if (err.name == 'CastError')
                 return res.status(404).json({ error:true,message: "id must be in integer format " });
-            return res.status(500).json({ error:true,message: err })
+            return res.status(500).json({ error:true,message: err.message })
         });
 
 
