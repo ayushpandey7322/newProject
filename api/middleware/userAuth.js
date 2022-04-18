@@ -46,29 +46,6 @@ class userAuth {
 
 
 
-    auth = (req, res, next) => {
-       
-        try {
-              const   token = req.headers.authorization.split(" ")[1];  
-              
-                const verify = jwt.verify(token, process.env.TOKEN);
-              
-                if (verify.email == "ayush@gmail.com") {
-                    next();
-                } else {
-                    return res.status(401).json({ error:true,message: "not admin" })
-                }
-           
-        } catch (error) {
-       
-            if (error.name != "TokenExpiredError") {
-                return res.status(401).json({ error:true,message: "invalid token" });  
-            }
-            else {
-                return res.status(401).json({ error:true,message: error.message });
-            }
-        }
-    }
 
     personalAuth = (req, res, next) => {                  
         User.findOne({ _id: req.params.id }).then((data) => {

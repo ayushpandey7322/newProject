@@ -103,9 +103,9 @@ class rolesControllers {
 
             if (data.length == 0) {
 
-                return res.status(404).json({ error:true,message: "no role with such query" });
+                return res.status(404).json({ error:false,message: "no role with such query" });
             }
-            return res.json({ data: data });
+            return res.status(200).json({ error:false,data: data });
         }).catch(err => {
             return res.status(500).json({ error:true,message: err.message });
         });

@@ -12,16 +12,15 @@ class postAuth {
             if(result==""){
                 return res.status(404).json({error:true,message:" user not exists"});
             }
-           // console.log(result);
+         
              roleid = result[0].roleid;
              role=result[0].role;
-          //  console.log(roleid);
+         
         }).catch(err => {
 
             return res.status(500).json({ error:true,message: err.message });
         });
-       // await Role.find().then(result=>{console.log(result);})
-      //  console.log(roleid);
+      
         await Role.findOne ({_id:roleid }).then(result => {
             console.log(result);
             if(result==null){
@@ -63,8 +62,8 @@ class postAuth {
 
     }
 
-    auth = (req, res, next) => {
-        async function f() {
+    auth = async(req, res, next) => {
+      
             try {
                 let isemail;
                 const token = req.headers.authorization.split(" ")[1];   
@@ -97,7 +96,7 @@ class postAuth {
                     return res.status(401).json({ error:true,message: error.message });
                 }
             }
-        } f();
+
     }
 
     

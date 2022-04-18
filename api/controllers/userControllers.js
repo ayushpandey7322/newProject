@@ -34,7 +34,7 @@ class userControllers {
 
                 if (data.length == 0) {
 
-                    return res.status(404).json({ error: true, message: "no user with such query" });
+                    return res.status(404).json({ error: false, message: "no user with such query" });
                 }
                 return res.status(200).json({ error:false,data: data });
             }).catch(err => {
