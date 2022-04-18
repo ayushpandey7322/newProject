@@ -13,6 +13,6 @@ router.get('/users/:id',  Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, use
 
 router.put('/users/:id', Auth.personalAuth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.update);
 router.put('/user/updatePassword/:id', Auth.personalAuth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.updatePassword);
-router.delete('/users:id', Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.destroy);
+router.delete('/users/:id', Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, user.destroy);
 
 module.exports =  router;

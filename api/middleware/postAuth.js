@@ -22,7 +22,7 @@ class postAuth {
         });
       
         await Role.findOne ({_id:roleid }).then(result => {
-            console.log(result);
+           // console.log(result);
             if(result==null){
                 return res.status(404).json({error:true,message:"role not exists"});
             }
