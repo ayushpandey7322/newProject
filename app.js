@@ -1,13 +1,14 @@
 const express = require('express');
 const app = express();
+const cors = require('cors')
 require('dotenv').config();
 require('./db');
 
+app.use(cors())
 
 const bodyparser = require('body-parser');
 app.use(bodyparser.urlencoded({ extended: false }))                                                                                                                             // frontend ke data ko receive in json form and then save
 app.use(bodyparser.json());
-
 
 const  postRoutes  = require('./api/routers/postRoutes');
 const userRoutes = require('./api/routers/userRoutes');
