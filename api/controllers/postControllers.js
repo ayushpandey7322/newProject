@@ -9,7 +9,7 @@ const validation = new postValidation;
 class postControllers {
     store = (req, res) => {
         if (!req.policies.includes("create_post")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
 
         let answer = validation.postValidation.validate(req.body);
@@ -25,7 +25,7 @@ class postControllers {
 
         post.save().then(result => {
 
-            return res.status(201).json({ error:false,data: result });
+            return res.status(201).json({ error:false,message:"new post created",data: result });
 
         }).catch(err => { return res.status(500).json({ error:true,message: err.message }) });
 
@@ -33,7 +33,7 @@ class postControllers {
 
     index = (req, res, next) => {
         if (!req.policies.includes("show_post")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Post.find({ $or:
             [
@@ -51,19 +51,19 @@ class postControllers {
         }
         ).then(post => {
             if (post == "")
-                return res.status(404).json({ error: false, message: "no post to show" });
-            return res.status(200).json({ error:false,data: post });
+                return res.status(404).json({ error: false, message: "no post to show",data:post });
+            return res.status(200).json({ error:false,message:"posts data",data: post });
      
         }).catch(err => {
           
-            return res.status(500).json({ error:true,data: err.message })
+            return res.status(500).json({ error:true,message: err.message })
         });
 
     };
 
     show = (req, res, next) => {
         if (!req.policies.includes("show_post")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Post.findOne({ _id: req.params.id }).then(result => {
         
@@ -75,10 +75,10 @@ class postControllers {
             else {
                 if (result["isActive"] == true) {
                     if (result.userid == req.isid) {
-                        return res.status(200).json({error:false, data: result });
+                        return res.status(200).json({error:false,message:"post data", data: result });
                     }
                     else if (result.userid != req.isid && result["status"] == "published") {
-                        return res.status(200).json({ error:false,data: result });
+                        return res.status(200).json({ error:false,message:"post data",data: result });
                     }
                     else {
                         return res.status(401).json({ error:true,message: "not authorized to access this post" });
@@ -101,7 +101,7 @@ class postControllers {
 
     destroy = (req, res) => {
         if (!req.policies.includes("delete_post")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Post.findById(req.params.id).then(result => {
             if (result == null) {
@@ -133,7 +133,7 @@ class postControllers {
 
     update = (req, res) => {   
         if (!req.policies.includes("update_post")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         Post.findOne({ _id: req.params.id },).then((data) => {
 
@@ -187,7 +187,7 @@ class postControllers {
                     }
 
                 },
-                    { upsert: true }).then(result => { res.status(201).json({ error:false,data: {title,body,status} }) });
+                    { upsert: true }).then(result => { res.status(201).json({ error:false,message:"updated post",data: {title,body,status} }) });
                  }
                  else {
                      return res.status(401).json({ error:true,message: "this user can't update this post" });

@@ -7,11 +7,13 @@ class userAuth {
 
 
 
-    rolesAuth = async (req, res,next) => {
+    rolesAuth = async (req, res, next) => {
+
+        console.log("adf");
         var roleid, role, policies = [];
         await User.find({
             email: { $in: req.isemail }
-        }).then(result => {
+        }).then(async result => {
             if(result==""){
                 return res.status(404).json({error:true,message:" user not exists"});
             }
@@ -19,27 +21,29 @@ class userAuth {
              roleid = result[0].roleid;
              role=result[0].role;
           //  console.log(roleid);
+
+            await Role.findOne({ _id: roleid }).then(result => {
+                console.log(result);
+                if (result == null) {
+                    return res.status(404).json({ error: true, message: "role not exists" });
+                }
+
+                const policies = result.policies;
+                req.policies = policies;
+                next();
+
+
+            }).catch(err => {
+
+                return res.status(500).json({ error: true, message: err.message });
+            });
         }).catch(err => {
 
             return res.status(500).json({ error:true,message: err.message });
         });
        // await Role.find().then(result=>{console.log(result);})
       //  console.log(roleid);
-        await Role.findOne ({_id:roleid }).then(result => {
-            console.log(result);
-            if(result==null){
-                return res.status(404).json({error:true,message:"role not exists"});
-            }
-           
-            const policies = result.policies;
-            req.policies = policies;
-            next();
-    
-            
-        }).catch(err => {
 
-            return res.status(500).json({ error:true,message: err.message });
-        });
        
     }
 
@@ -78,6 +82,7 @@ class userAuth {
     
 
     verifyToken = (req, res, next) => {    
+        console.log("a");
         try {
             const token = req.headers.authorization.split(" ")[1];  
             const verify = jwt.verify(token, process.env.TOKEN);
@@ -107,6 +112,7 @@ class userAuth {
     
 
     logedinUser = (req, res, next) => {
+        console.log("ffks");
         User.findOne({ email: req.isemail },).then((data) => {
             if (data == null) {
                 return res.status(404).json({ msg: "user not found" });

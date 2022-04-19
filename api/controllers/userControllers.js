@@ -11,7 +11,7 @@ const validations = new userValidations;
 class userControllers {
     index = async(req, res, next) => {
             if (!req.policies.includes("show_users")) {
-                return res.status(404).json({ error: true,message: "unauthorized access" });
+                return res.status(401).json({ error: true,message: "unauthorized access" });
         }
 
             let keys = Object.keys(req.query);
@@ -34,9 +34,9 @@ class userControllers {
 
                 if (data.length == 0) {
 
-                    return res.status(404).json({ error: false, message: "no user with such query" });
+                    return res.status(404).json({ error: false, message: "no user with such query" ,data:data});
                 }
-                return res.status(200).json({ error:false,data: data });
+                return res.status(200).json({ error:false,nessage:"users data",data: data });
             }).catch(err => {
                 return res.status(500).json({ error: true, message: err.message });
             });
@@ -58,7 +58,7 @@ class userControllers {
 
     me = (req, res, next) => {
         if (!req.policies.includes("show_me")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         User.findOne({ email: req.isemail }).then((data) => {
             if (data == null) {
@@ -66,7 +66,7 @@ class userControllers {
             }
             else {
 
-                return res.status(200).json({ error:false,data: data });
+                return res.status(200).json({ error:false,message:"my data",data: data });
             }
 
         }).catch(err => {
@@ -81,16 +81,19 @@ class userControllers {
 
     show = (req, res) => {
         if (!req.policies.includes("show_users")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         User.findById({ _id: req.params.id }).then(result => {
-            console.log("fd");
+           // console.log("fd");
          
             if (result == null) {
                 return res.status(404).json({ error:true,message: "not a valid id/ user not exist" });
             }
             else {
-                return res.status(200).json({ error:false,data: result });
+                
+                if (result.isActive == "false")
+                    return res.status(200).json({ error: false, message:"deleted user",data: result });
+                return res.status(200).json({ error:false,message:"user data",message:"user data",data: result });
             }
         }
         ).catch(err => {
@@ -102,19 +105,17 @@ class userControllers {
 
 
     destroy = (req, res) => {
+       // console.log("fa");
         if (!req.policies.includes("delete_user")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         User.findById(req.params.id).then(result => {
             if (result == null) {
-                return res.status(404).json({ error:true,message: "user doesn't exist" });
+                return res.status(404).json({ error:true,message: "user not exists" });
             }
-       
-            if (result['email'] == 'ayush2@gmail.com') {
-                return res.status(401).json({ error:true,message: "can't delete admin" });
-            }
+      
                     let isActive = result['isActive'] = "false";
-            s
+            
                     User.updateOne ({ _id: req.params.id }, {
                         $set: {
                             isActive: isActive
@@ -122,13 +123,11 @@ class userControllers {
                     },
                         { upsert: true }).then(result => { res.status(200).json({ error:false,message: "successfully deleted" }) });
 
-               
-            
 
         }).catch(err => {
             if (err.name == 'CastError')
                 return res.status(404).json({ error:true,message: "id must be in integer format " });
-            return res.status(500).json({ error:true,message: err })
+            return res.status(500).json({ error:true,message: err.message })
         });
 
 
@@ -138,7 +137,7 @@ class userControllers {
 
     update = (req, res) => {
         if (!req.policies.includes("update")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         User.findOne({ _id: req.params.id },).then ((data) => {
 
@@ -193,7 +192,7 @@ class userControllers {
 
                     },
                     { upsert: true }
-                ).then(result => { return res.status(201).json({ error:false,data: {name,email,gender} }) });
+                ).then(result => { return res.status(201).json({ error:false,message:"updated policy",data: {name,email,gender} }) });
 
             }
         }
@@ -211,7 +210,7 @@ class userControllers {
 
     updatePassword = (req, res) => {
         if (!req.policies.includes("update_password")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         User.findOne({ _id: req.params.id },).then((data) => {
 

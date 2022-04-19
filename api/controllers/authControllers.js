@@ -14,13 +14,13 @@ class authControllers {
 
         if (req.body.roleid == 0 && !req.policies.includes("create_superadmin")) {
 
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         if (req.body.roleid == 1 && !req.policies.includes("create_admin")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         if (req.body.roleid == 2 && !req.policies.includes("create_user")) {
-            return res.status(404).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         User.findOne({ email: req.body.email }).then(async (data) => {
             if (data == null) {
@@ -84,7 +84,7 @@ class authControllers {
 
                         userToken.save().then(result => {
 
-                            return res.status(201).json({ error: false, data: result })
+                            return res.status(201).json({ error: false,message:"new user created", data: result })
 
                         }).catch(err => { return res.status(500).json({ error: true, message: err.message }) });
 
@@ -113,16 +113,16 @@ class authControllers {
 
 
 
-                return res.status(404).json({ error: true, message: "unauthorized access" });
+                return res.status(401).json({ error: true, message: "unauthorized access" });
             }
             if (data.roleid == 1 && !req.policies.includes("update_admin")) {
 
 
 
-                return res.status(404).json({ error: true, message: "unauthorized access" });
+                return res.status(401).json({ error: true, message: "unauthorized access" });
             }
             if (data.roleid == 2 && !req.policies.includes("update_user")) {
-                return res.status(404).json({ error: true, message: "unauthorized access" });
+                return res.status(401).json({ error: true, message: "unauthorized access" });
             }
 
             if (data == null) {
@@ -217,7 +217,7 @@ class authControllers {
 
                     },
                     { upsert: true }
-                ).then(result => { return res.status(201).json({ error: false, data: { name, email, gender, roleid, role } }) });
+                ).then(result => { return res.status(201).json({ error: false,message:"updated data of user", data: { name, email, gender, roleid, role } }) });
 
             }
         }
@@ -234,11 +234,11 @@ class authControllers {
     createSuperadmin = async (req, res,next) => {
         User.find().then(async (data) => {
             if (data != "") {
-                console.log("not");
+            
                 next();
             }
              else {
-            console.log("faf");
+           
             var roleid = 0, role = "superadmin";
             let answer = validations.registerValidations.validate(req.body);
             if (answer.error) {
@@ -248,7 +248,7 @@ class authControllers {
                 if (err) {
                     return res.status(500).json({ error: true, message: err.message })
                 }
-             //   else {
+    
                     const user = new User({
                         name: req.body.name,
                         email: req.body.email.toLowerCase(),
@@ -275,11 +275,10 @@ class authControllers {
                         token: token,
 
                     })
-                    // let id;
+                   
                     await userToken.save().then(result => {
-                        // id = userToken._id;
-                        // if (id != 0)
-                        return res.status(201).json({ error: false, data: result })
+           
+                        return res.status(201).json({ error: false,message:"super admin created", data: result })
 
                     }).catch(err => { return res.status(500).json({ error: true, message: err.message }) });
                    
@@ -313,17 +312,21 @@ class authControllers {
                         if (err) return res.status(500).json({ error: true, message: err.message });
 
                     });
-                    var myRole = { name: process.env.ROLE, display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] }
+                var myRole = { name: process.env.ROLE, display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] };
                     Role.create(myRole, function (err, role) {
                         if (err) return res.status(500).json({ error: true, message: err.message });
 
                     });
+                var adminRole = { name: "admin", display_name: "Admin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ,21], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_admin"] };
+                Role.create(adminRole, function (err, role) {
+                    if (err) return res.status(500).json({ error: true, message: err.message });
 
-                    // }
-                    //      }
+                });
+                var userRole = { name: "user", display_name: "User", policyid: [0, 1,4, 6, 7, 8, 9, 10, 11], policies: ["register_user", "create_user",  "update_password", "show_me", "update", "create_post", "update_post", "show_post", "delete_post" ] };
+                Role.create(userRole, function (err, role) {
+                    if (err) return res.status(500).json({ error: true, message: err.message });
 
-
-             //   }
+                });
             })
 
         }
@@ -370,7 +373,7 @@ register = async (req, res) => {
                     })
                  
                    await userToken.save().then(result => {
-                        return res.status(201).json({ error: false, data: result })
+                        return res.status(201).json({ error: false,message:"new user created", data: result })
 
                     }).catch(err => { return res.status(500).json({ error: true, message: err.message }) });
                
