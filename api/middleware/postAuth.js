@@ -11,19 +11,19 @@ class postAuth {
         }).then(async result => {
 
             if(result==""){
-                return res.status(404).json({error:true,message:" user not exists"});
+                return res.status(404).json({ error: true, message: " user not exists", data: {}});
 
             }
             console.log(result[0].isActive);
             if (result[0].isActive == "false")
-                return res.status(401).json({ error: true, message: " user has been deleted" });
+                return res.status(401).json({ error: true, message: " user has been deleted", data: {} });
              roleid = result[0].roleid;
             role = result[0].role;
 
             await Role.findOne({ _id: roleid }).then( result => {
                 // console.log(result);
                 if (result == null) {
-                    return res.status(404).json({ error: true, message: "role not exists" });
+                    return res.status(404).json({ error: true, message: "role not exists", data: {} });
                 }
 
                 const policies = result.policies;
@@ -33,12 +33,12 @@ class postAuth {
 
             }).catch(err => {
 
-                return res.status(500).json({ error: true, message: err.message });
+                return res.status(500).json({ error: true, message: err.message, data: {} });
             });
          
         }).catch(err => {
 
-            return res.status(500).json({ error:true,message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
       
 
@@ -54,16 +54,16 @@ class postAuth {
                 req.isemail = verify.email;
                 next();
             } else {
-                return res.status(404).json({ error: true, message: "user not exist" })
+                return res.status(404).json({ error: true, message: "user not exist", data: {}})
             }
 
         } catch (error) {
 
             if (error.name != "TokenExpiredError") {
-                return res.status(401).json({ error: true, message: "invalid token" });
+                return res.status(401).json({ error: true, message: "invalid token", data: {} });
             }
             else {
-                return res.status(401).json({ error: true, message: error.message });
+                return res.status(401).json({ error: true, message: error.message, data: {}});
             }
         }
 
@@ -82,9 +82,9 @@ class postAuth {
                 await User.findOne({ email: verify.email }).then((data) => {
                     console.log(data);
                     if (data == null)
-                        return res.status(401).json({ error: true, message: "user not exists" });
+                        return res.status(401).json({ error: true, message: "user not exists", data: {} });
                    if (data['token'] == "") {
-                        return res.status(401).json({ error:true,message: "already logged out" });
+                       return res.status(401).json({ error: true, message: "already logged out", data: {} });
                     }
                     else {
                         req.isemail = verify.email;
@@ -98,18 +98,18 @@ class postAuth {
                         next();
                     } else {
 
-                        return res.status(401).json({ error: true, messsage: "not a verified user  " });
+                        return res.status(401).json({ error: true, messsage: "not a verified user  ", data: {} });
                     }
                }).catch(err => {
-                   return res.status(500).json({ eror:true,message: err.message });
+                   return res.status(500).json({ eror: true, message: err.message, data: {} });
                });
             } catch (error) {
           
                 if (error.name != "TokenExpiredError") {
-                    return res.status(401).json({ error:true,message: "invalid token" });  
+                    return res.status(401).json({ error: true, message: "invalid token", data: {} });  
                 }
                 else {
-                    return res.status(401).json({ error:true,message: error.message });
+                    return res.status(401).json({ error: true, message: error.message, data: {} });
                 }
             }
 
@@ -119,18 +119,18 @@ class postAuth {
     logedinUser = (req, res, next) => {
         User.findOne({ email: req.isemail },).then((data) => {
             if (data == null) {
-                return res.status(404).json({ msg: "user not found" });
+                return res.status(404).json({ error: true, message: "user not exists", data: {} });
             }
             else {
                 if (data['token'] == "") {
-                    return res.status(401).json({ msg: "not a valid user / logged out" });
+                    return res.status(401).json({ error: true, message: "user already logged out", data: {}});
                 }
                 else {
                     next();
                 }
             }
         }).catch(err => {
-            return res.status(500).json({ msg: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
     }
     

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const { Role } = require('../model/rolesSchema');
 
 const autoIncrement = require('mongoose-auto-increment');
 const { connection } = require('../../db.js');
@@ -12,18 +12,14 @@ const userSchema = new mongoose.Schema({
     gender: String,
     isActive: { type: String, default: "true" },
     token: String,
-    roleid: { type: Number,default:2, ref: 'Policy' },
-    role: { type: String, default: "user", ref: 'Policy' },
+    roleid: { type: Number,default:2, ref: Role },
+    role: { type: String, default: "user", ref: Role },
   
 }
 );
 
-
-
-
-
 userSchema.plugin(autoIncrement.plugin, 'User');
 const User = mongoose.model('User', userSchema);
 
-module.exports = {User: User}
+module.exports = { User: User };
 

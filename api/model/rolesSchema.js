@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { Policy } = require('../model/policySchema');
 const autoIncrement = require('mongoose-auto-increment');
 const { connection } = require('../../db.js');
 autoIncrement.initialize(connection);
@@ -6,8 +7,8 @@ autoIncrement.initialize(connection);
 const rolesSchema = new mongoose.Schema({
     name: String,
     display_name: String,
-    policyid: [{ type: Number, ref: 'Policy' }],
-    policies: [{ type: String, ref: 'Policy' }],
+    policyid: [{ type: Number, ref: Policy }],
+    policies: [{ type: String, ref: Policy }],
     isActive: { type: Boolean, default: true }
 }, {
     timestamps: true

@@ -1,6 +1,7 @@
 const { User } = require('../model/userSchema');
 const { Role } = require('../model/rolesSchema');
 const { Policy } = require('../model/policySchema');
+const { Token } = require('../model/tokenSchema');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -14,24 +15,24 @@ class authControllers {
 
         if (req.body.roleid == 0 && !req.policies.includes("create_superadmin")) {
 
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access" ,data: {} });
         }
         if (req.body.roleid == 1 && !req.policies.includes("create_admin")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         if (req.body.roleid == 2 && !req.policies.includes("create_user")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         User.findOne({ email: req.body.email }).then(async (data) => {
             if (data == null) {
 
                 let answer = validations.createUsersValidations.validate(req.body);
                 if (answer.error) {
-                    return res.status(400).json({ error: true, message: answer.error.details[0].message });
+                    return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {}});
                 }
                 bcrypt.hash(req.body.password, 10, async (err, hash) => {
                     if (err) {
-                        return res.status(500).json({ error: true, message: err.message })
+                        return res.status(500).json({ error: true, message: err.message, data: {} })
                     }
                     else {
                         //////////////////////////////////////////////
@@ -42,7 +43,7 @@ class authControllers {
                             }
                         })
                         if (!rolesIds.includes(req.body.roleid)) {
-                            return res.status(404).json({ erro: true, message: "roleid " + req.body.roleid + " not exists" });
+                            return res.status(404).json({ erro: true, message: "roleid " + req.body.roleid + " not exists", data: {}});
                         }
                         //////////////////////////////////////
                         let role;
@@ -86,19 +87,37 @@ class authControllers {
 
                             return res.status(201).json({ error: false,message:"new user created", data: result })
 
-                        }).catch(err => { return res.status(500).json({ error: true, message: err.message }) });
+                        }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
+
+                        let policyid, policies;
+                        await Role.find({
+                            _id: { $in: userToken.roleid }
+                        }).then(
+                            result => {
+                                policyid = result[0].policyid;
+                                policies = result[0].policies;
+                            })
+
+                        const newToken = new Token({
+                            token: token,
+                            status: "active",
+                            userid: userToken._id,
+                            policyid: policyid,
+                            policies: policies
+                        })
+                        await newToken.save();
 
 
                     }
                 })
             }
             else {
-                return res.status(400).json({ error: true, message: 'user already exists' });
+                return res.status(400).json({ error: true, message: 'user already exists', data: {}});
             }
         }
         ).catch(err => {
 
-            return res.status(500).json({ error: true, message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
     };
 
@@ -113,20 +132,20 @@ class authControllers {
 
 
 
-                return res.status(401).json({ error: true, message: "unauthorized access" });
+                return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
             }
             if (data.roleid == 1 && !req.policies.includes("update_admin")) {
 
 
 
-                return res.status(401).json({ error: true, message: "unauthorized access" });
+                return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
             }
             if (data.roleid == 2 && !req.policies.includes("update_user")) {
-                return res.status(401).json({ error: true, message: "unauthorized access" });
+                return res.status(401).json({ error: true, message: "unauthorized access", data:{} });
             }
 
             if (data == null) {
-                res.status(404).json({ error: true, message: "user not exists" });
+                res.status(404).json({ error: true, message: "user not exists", data: {} });
 
             }
             else {
@@ -148,7 +167,7 @@ class authControllers {
                         })
 
                         if (!rolesIds.includes(req.body.roleid)) {
-                            return res.status(404).json({ erro: true, message: "roleid " + req.body.roleid + " not exists" });
+                            return res.status(404).json({ error: true, message: "roleid " + req.body.roleid + " not exists", data: {}});
                         }
 
 
@@ -167,7 +186,7 @@ class authControllers {
 
                 }
                 else {
-                    return res.status(404).json({ error: true, message: "a user must have a role" });
+                    return res.status(404).json({ error: true, message: "a user must have a role", data: {}});
                 }
 
                 if (req.body.name != "") {
@@ -175,32 +194,32 @@ class authControllers {
 
                 }
                 else {
-                    return res.status(400).json({ error: true, message: "name field can't be empty" });
+                    return res.status(400).json({ error: true, message: "name field can't be empty", data: {}});
                 }
                 if (req.body.email != "") {
 
                     if (req.body.email != undefined && req.body.email.toLowerCase() != data.email.toLowerCase()) {
 
-                        return res.status(400).json({ error: true, message: "can't update email" });
+                        return res.status(400).json({ error: true, message: "can't update email", data: {}});
                     }
 
                     email = req.body.email == undefined ? data.email : req.body.email.toLowerCase();
 
                 }
                 else {
-                    return res.status(400).json({ error: true, message: "email field can't be empty" });
+                    return res.status(400).json({ error: true, message: "email field can't be empty", data: {} });
                 }
 
                 if (req.body.gender != "") {
                     gender = req.body.gender == undefined ? data.gender : req.body.gender;
                 }
                 else {
-                    return res.status(400).json({ error: true, message: "gender field can't be empty" });
+                    return res.status(400).json({ error: true, message: "gender field can't be empty", data: {} });
                 }
 
                 let answer = validations.updateUsersValidations.validate(req.body);
                 if (answer.error) {
-                    return res.status(400).json({ error: true, message: answer.error.details[0].message });
+                    return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {}});
                 }
                 User.updateOne(
                     { _id: req.params.id },
@@ -224,14 +243,14 @@ class authControllers {
 
         ).catch(err => {
             if (err.name == 'CastError')
-                return res.status(404).json({ errror: true, message: "id must be in integer format " });
+                return res.status(404).json({ errror: true, message: "id must be in integer format ", data: {} });
             console.log("faf");
-            return res.status(500).json({ error: true, message: err })
+            return res.status(500).json({ error: true, message: err.message, data: {} })
         });
     };
 
 
-    createSuperadmin = async (req, res,next) => {
+    createSuperAdmin = async (req, res,next) => {
         User.find().then(async (data) => {
             if (data != "") {
             
@@ -242,11 +261,11 @@ class authControllers {
             var roleid = 0, role = "superadmin";
             let answer = validations.registerValidations.validate(req.body);
             if (answer.error) {
-                return res.status(400).json({ error: true, message: answer.error.details[0].message });
+                return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
             }
             bcrypt.hash(req.body.password, 10, async (err, hash) => {
                 if (err) {
-                    return res.status(500).json({ error: true, message: err.message })
+                    return res.status(500).json({ error: true, message: err.message, data: {} })
                 }
     
                     const user = new User({
@@ -264,6 +283,8 @@ class authControllers {
                         email: user.email,
                     }, process.env.TOKEN, { expiresIn: '6h' });
 
+               // console.log(token);
+
                     const userToken = new User({
                         name: req.body.name,
                         email: req.body.email.toLowerCase(),
@@ -275,13 +296,32 @@ class authControllers {
                         token: token,
 
                     })
-                   
+
                     await userToken.save().then(result => {
-           
+                       
                         return res.status(201).json({ error: false,message:"super admin created", data: result })
 
-                    }).catch(err => { return res.status(500).json({ error: true, message: err.message }) });
-                   
+                    }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
+
+                let policyid, policies;
+                await Role.find({
+                    _id: { $in: userToken.roleid }
+                }).then(
+                    result => {
+                        policyid = result[0].policyid;
+                        policies = result[0].policies;
+                    })
+
+                const newToken = new Token({
+                    token: token,
+                    status: "active",
+                    userid: userToken._id,
+                    policyid: policyid,
+                    policies: policies
+                })
+                await newToken.save();
+
+
                     var myPolicies = [
                         { name: "register_user", display_name: "registerUser", description: "register user" },
                         { name: "create_user", display_name: "createUser", description: "create user" },
@@ -309,24 +349,29 @@ class authControllers {
                     ];
 
                     Policy.create(myPolicies, function (err, policy) {
-                        if (err) return res.status(500).json({ error: true, message: err.message });
+                        if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                     });
                 var myRole = { name: process.env.ROLE, display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] };
                     Role.create(myRole, function (err, role) {
-                        if (err) return res.status(500).json({ error: true, message: err.message });
+                        if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                     });
                 var adminRole = { name: "admin", display_name: "Admin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ,21], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_admin"] };
                 Role.create(adminRole, function (err, role) {
-                    if (err) return res.status(500).json({ error: true, message: err.message });
+                    if (err) return res.status(500).json({ error: true, message: err.message, data: {}});
 
                 });
                 var userRole = { name: "user", display_name: "User", policyid: [0, 1,4, 6, 7, 8, 9, 10, 11], policies: ["register_user", "create_user",  "update_password", "show_me", "update", "create_post", "update_post", "show_post", "delete_post" ] };
                 Role.create(userRole, function (err, role) {
-                    if (err) return res.status(500).json({ error: true, message: err.message });
+                    if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                 });
+                
+
+
+
+
             })
 
         }
@@ -342,11 +387,11 @@ register = async (req, res) => {
            
             let answer = validations.registerValidations.validate(req.body);
             if (answer.error) {
-                return res.status(400).json({ error:true,message: answer.error.details[0].message });
+                return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
             }
             bcrypt.hash(req.body.password, 10, async(err, hash) => {
                 if (err) {
-                    return res.status(500).json({ error: true, message: err.message })
+                    return res.status(500).json({ error: true, message: err.message, data: {}})
                 }
                 else {
                     const user = new User({
@@ -361,7 +406,7 @@ register = async (req, res) => {
                     const token = jwt.sign({
                         email: user.email,
                     }, process.env.TOKEN, { expiresIn: '6h' });
-
+                  
                     const userToken = new User({
                         name: req.body.name,
                         email: req.body.email.toLowerCase(),
@@ -372,23 +417,39 @@ register = async (req, res) => {
 
                     })
                  
-                   await userToken.save().then(result => {
+                    await userToken.save().then(result => {
+      
                         return res.status(201).json({ error: false,message:"new user created", data: result })
 
-                    }).catch(err => { return res.status(500).json({ error: true, message: err.message }) });
-               
-                    
+                   }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
+
+                    let policyid, policies;
+                    await Role.find({
+                        _id: { $in: userToken.roleid }
+                    }).then(
+                        result => {
+                            policyid = result[0].policyid;
+                            policies = result[0].policies;})
+
+                    const newToken = new Token({
+                        token: token,
+                        status: "active",
+                        userid: userToken._id,
+                        policyid: policyid,
+                        policies:policies
+                    })
+                    await newToken.save();
           
                 }
             })
         }
         else {
-            return res.status(400).json({ error:true,message: 'user already exists' });
+            return res.status(400).json({ error: true, message: 'user already exists', data: {}});
         }
     }
     ).catch(err => {
 
-        return res.status(500).json({ error:true,message: err.message });
+        return res.status(500).json({ error: true, message: err.message, data: {} });
     });
 };
 
@@ -398,16 +459,16 @@ login = (req, res) => {
     User.find({ email: req.body.email }).then(user => {
         let answer = validations.loginValidations.validate(req.body);
         if (answer.error) {
-            return res.status(400).json({error:true, message: answer.error.details[0].message });
+            return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
         }
 
         if (user.length == 0) {
-            return res.status(401).json({ error:true,message: 'no user with this email' });
+            return res.status(401).json({ error: true, message: 'no user with this email', data: {} });
         }
 
         bcrypt.compare(req.body.password, user[0].password, (err, result) => {
             if (!result) {
-                return res.status(401).json({ error:true,message: 'password matching fail' });
+                return res.status(401).json({ error: true, message: 'password matching fail', data: {} });
             }
             if (result) {
 
@@ -422,7 +483,7 @@ login = (req, res) => {
                     },
                     { upsert: true }).then(result => {
                         res.status(201).json({
-                            error: false, data: {
+                            error: false,message:"log in successfully", data: {
                                 name: user[0].name,
                                 email: user[0].email,
                                 gender: user[0].gender,
@@ -434,7 +495,7 @@ login = (req, res) => {
         })
     }).catch(err => {
         console.log("dfaf");
-        return res.status(500).json({ error:true,message: err.message });
+        return res.status(500).json({ error: true, message: err.message, data: {} });
     });
 };
 
@@ -444,17 +505,17 @@ logout = function (req, res) {
 
     User.findOne({ email: req.isemail }).then((data) => {
         if (data['token'] == "") {
-            res.status(401).json({ error:true,message: "already logged out" });
+            res.status(401).json({ error: true, message: "already logged out", data: {} });
         }
         else {
 
             User.updateOne({ email: data.email }, { $set: { token: "" } }, { upsert: true }
             ).then(result => {
-                return res.status(200).json({ error:false,message: "logged out" })
+                return res.status(200).json({ error: false, message: "logged out", data: {}  })
             }
             );
         }
-    }).catch(err => { return res.status(500).json({ error:true,message: err }); });
+    }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }); });
 
 };
 }

@@ -8,15 +8,15 @@ class policyControllers {
     store = async (req, res) => {
         
         if (!req.policies.includes("create_policy")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         await Policy.findOne({ name: req.body.name }).then (async(data) => {
             if (data != null) {
-                return res.status(404).json({ error:true,message: 'policy exist' });
+                return res.status(404).json({ error: true, message: 'policy exist', data: {} });
             }
                 let answer = validations.storeValidations.validate(req.body);
                 if (answer.error) {
-                    return res.status(400).json({ error:true,message: answer.error.details[0].message });
+                    return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
                 }
                 const policy = new Policy({
                     name: req.body.name,
@@ -29,10 +29,10 @@ class policyControllers {
                   name = policy.name;
                     return res.status(201).json({ error:false,message:"new policy created",data: result })
 
-                }).catch(err => { return res.status(500).json({ error:true,message: err.message }) });
+               }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {}}) });
             await Role.findOne({ role: "superadmin" }).then(data => {
                 if (data == null)
-                    res.status(404).json({ error: true, message: "role not exists" });
+                    res.status(404).json({ error: true, message: "role not exists", data: {} });
                 data.policyid.push(id);
                 data.policies.push(name);
                 data.save();
@@ -41,14 +41,14 @@ class policyControllers {
            
         }).catch(err => {
 
-            return res.status(500).json({ error:true,message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
     }
 
 
     index = (req, res, next) => {
         if (!req.policies.includes("show_policy")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         let keys = Object.keys(req.query);
         let filters = new Object();
@@ -74,7 +74,7 @@ class policyControllers {
             }
             return res.json({ error:false,message:"policies data",data: data });
         }).catch(err => {
-            return res.status(500).json({ error:true,message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
 
 
@@ -86,11 +86,11 @@ class policyControllers {
 
     show = (req, res) => {
         if (!req.policies.includes("show_policy")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Policy.findById(req.params.id).then(result => {
             if (result == null) {
-                return res.status(404).json({ error:true,message: " policy doesn't exist" });
+                return res.status(404).json({ error: true, message: " policy doesn't exist", data: {} });
             }
             return res.status(200).json({error:false,message:"polcies data",  data: result });
 
@@ -98,19 +98,19 @@ class policyControllers {
         }
         ).catch(err => {
             if (err.name == 'CastError')
-                return res.status(404).json({ msg: "id must be in integer format " });
-            return res.status(500).json({ error:true,message: err.message });
+                return res.status(404).json({ msg: "id must be in integer format ", data: {} });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
     }
 
 
     destroy = (req, res) => {
         if (!req.policies.includes("delete_policy")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Policy.findById(req.params.id).then(result => {
             if (result == null) {
-                return res.status(404).json({ error:true,message: "policy doesn't exist" });
+                return res.status(404).json({ error: true, message: "policy doesn't exist", data: {}});
             }
 
 
@@ -121,28 +121,28 @@ class policyControllers {
                         isActive: isActive
                     }
                 },
-                    { upsert: true }).then(result => { return res.status(200).json({ error:false,message: "successfully deleted" }); });
+                    { upsert: true }).then(result => { return res.status(200).json({ error: false, message: "successfully deleted", data: {} }); });
 
             
 
         }).catch(err => {
             if (err.name == 'CastError')
-                return res.status(404).json({ error:true,message: "id must be in integer format " });
-            return res.status(500).json({ error: true, message: err.message });
+                return res.status(404).json({ error: true, message: "id must be in integer format ", data: {}});
+            return res.status(500).json({ error: true, message: err.message, data: {} });
             });
     }
 
 
     update = (req, res) => {   
         if (!req.policies.includes("update_policy")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         Policy.findOne({ _id: req.params.id }).then((data) => {
             console.log("hhh");
 
             if (data == null) {
 
-               return  res.status(400).json({ error:true,message: "policy doesn't exist" });
+                return res.status(400).json({ error: true, message: "policy doesn't exist", data: {}});
 
             } 
             console.log("jjj");
@@ -159,21 +159,21 @@ class policyControllers {
 
                     if (req.body.name != undefined && req.body.name.toLowerCase() != data.name.toLowerCase()) {
 
-                        return res.status(400).json({ error:true,message: "can't update name of a policy" });
+                        return res.status(400).json({ error: true, message: "can't update name of a policy", data: {} });
                     }
         
                     name = req.body.name == undefined ? data.name : req.body.name.toLowerCase();
               
                 }
                 else {
-                    return res.status(400).json({ error: true,message: "name field can't be empty" });
+                    return res.status(400).json({ error: true, message: "name field can't be empty", data: {} });
                 }
 
                 if (req.body.display_name != "") {
                     display_name = req.body.display_name == undefined ? data.display_name : req.body.display_name;
                 }
                 else {
-                    return res.status(400).json({ error:true,message: "display_name field can't be empty" });
+                    return res.status(400).json({ error: true, message: "display_name field can't be empty", data: {} });
                 }
 
             console.log("dfa");
@@ -181,7 +181,7 @@ class policyControllers {
                 let answer = validations.updateValidations.validate(req.body);
 
                 if (answer.error) {
-                    return res.status(400).json({ error:true,message: answer.error.details[0].message });
+                    return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
                 }
             console.log("faf");
 
@@ -204,8 +204,8 @@ class policyControllers {
         ).catch(err => {
             console.log("afa");
             if (err.name == 'CastError')
-                return res.status(404).json({ error:true,message: "id must be in integer format " });
-            return res.status(500).json({ error:true,message: err.message })
+                return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
+            return res.status(500).json({ error: true, message: err.message, data: {} })
         });
     };
 }

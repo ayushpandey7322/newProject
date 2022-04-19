@@ -15,11 +15,11 @@ class userAuth {
             email: { $in: req.isemail }
         }).then(async result => {
             if(result==""){
-                return res.status(404).json({ error: true, message: " user not exists" });
+                return res.status(404).json({ error: true, message: " user not exists", data: {} });
 
             }
             if (result[0].isActive == "false")
-                return res.status(401).json({ error: true, message: " user has been deleted" });
+                return res.status(401).json({ error: true, message: " user has been deleted", data: {} });
              roleid = result[0].roleid;
              role=result[0].role;
      
@@ -27,7 +27,7 @@ class userAuth {
             await Role.findOne({ _id: roleid }).then(result => {
                 console.log(result);
                 if (result == null) {
-                    return res.status(404).json({ error: true, message: "role not exists" });
+                    return res.status(404).json({ error: true, message: "role not exists", data: {}});
                 }
 
                 const policies = result.policies;
@@ -37,11 +37,11 @@ class userAuth {
 
             }).catch(err => {
 
-                return res.status(500).json({ error: true, message: err.message });
+                return res.status(500).json({ error: true, message: err.message, data: {}});
             });
         }).catch(err => {
 
-            return res.status(500).json({ error:true,message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {}});
         });
        // await Role.find().then(result=>{console.log(result);})
       //  console.log(roleid);
@@ -56,7 +56,7 @@ class userAuth {
     personalAuth = (req, res, next) => {                  
         User.findOne({ _id: req.params.id }).then((data) => {
             if (data == null) {
-                return res.status(404).json({ error:true,message: "not a valid id/ user not exist" });
+                return res.status(404).json({ error: true, message: "user not exists", data: {} });
             }
             else {
 
@@ -69,15 +69,15 @@ class userAuth {
                     next();
                 }
                 else {
-                    return res.status(401).json({error:true,message:"not a verified user"});//  throw new Error("not a verified user");
+                    return res.status(401).json({ error: true, message: "not a verified user", data: {}});//  throw new Error("not a verified user");
                 }
             }
         }).catch(error => {
                 if (error.name != "TokenExpiredError") {
-                    return res.status(401).json({ error:true,message: "invalid token" });
+                    return res.status(401).json({ error: true, message: "invalid token", data: {} });
                 }
                 else {
-                    return res.status(401).json({ error:true,message: error.message });
+                    return res.status(401).json({ error: true, message: error.message, data: {} });
                 }
             });
     }
@@ -92,16 +92,16 @@ class userAuth {
                 req.isemail = verify.email;
                 next();
             } else {
-                return res.status(404).json({ error:true,message: "user not exist" })
+                return res.status(404).json({ error: true, message: "user not exist", data: {} })
             }
           
         } catch (error) {
            
             if (error.name != "TokenExpiredError") {
-                return res.status(401).json({ error:true,message: "invalid token" });
+                return res.status(401).json({ error: true, message: "invalid token", data: {}});
             }
             else {
-                return res.status(401).json({ error:true,message :error.message });
+                return res.status(401).json({ error: true, message: error.message, data: {}});
             }
         }
 
@@ -117,18 +117,18 @@ class userAuth {
         console.log("ffks");
         User.findOne({ email: req.isemail },).then((data) => {
             if (data == null) {
-                return res.status(404).json({ msg: "user not found" });
+                return res.status(404).json({ error:true,message: "user not found", data: {} });
             }
             else {
                 if (data['token'] == "") {
-                    return res.status(401).json({ msg: "not a valid user / logged out" });
+                    return res.status(401).json({ error: true, message: "user already logged out", data: {} });
                 }
                 else {
                     next();
                 }
             }
         }).catch(err => {
-            return res.status(500).json({ msg: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {}});
         });
     }
     

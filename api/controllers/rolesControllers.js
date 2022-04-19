@@ -9,14 +9,14 @@ const validations = new rolesValidations;
 class rolesControllers {
     store = async (req, res) => {
         if (!req.policies.includes("create_role")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findOne({ name: req.body.name }).then (async(data) => {
             if (data == null) {
                 var policyNames = [];
                 let answer = validations.storeValidations.validate(req.body);
                 if (answer.error) {
-                  return res.status(400).json({ error:true,message: answer.error.details[0].message });
+                    return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
                 }
 
                 
@@ -40,7 +40,7 @@ class rolesControllers {
                     }
 
                     if (notExist == true)
-                        return res.status(404).json({ error: true, message: "policies " + policyNotExist + " not exists" });
+                        return res.status(404).json({ error: true, message: "policies " + policyNotExist + " not exists", data: {} });
 
                     await Policy.find({
                         _id: { $in: req.body.policyid }
@@ -74,20 +74,20 @@ class rolesControllers {
                         return res.status(200).json({ error: false, message:"new role created",data: result });
 
                     }
-                    ).catch(err => { return res.status(500).json({ error:true,message: err.message }) });
+                    ).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {}}) });
       
             }
             else {
-                return res.status(401).json({ error:true,message :'role exist' });
+                return res.status(401).json({ error: true, message: 'role exist', data: {} });
             }
         }).catch(err => {
-            return res.status(500).json({ error: true, message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
     };
 
     index = (req, res, next) => {
         if (!req.policies.includes("show_role")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         let keys = Object.keys(req.query);
         let filters = new Object();
@@ -107,7 +107,7 @@ class rolesControllers {
             }
             return res.status(200).json({ error:false,message:"roles data",data: data });
         }).catch(err => {
-            return res.status(500).json({ error:true,message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
 
 
@@ -119,29 +119,29 @@ class rolesControllers {
 
     show = (req, res) => {
         if (!req.policies.includes("show_role")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findById(req.params.id).then(result => {
             if (result == null) {
-                return res.status(404).json({ error:true,message: " role doesn't exist" });
+                return res.status(404).json({ error: true, message: " role doesn't exist", data: {} });
             }
             return res.status(200).json({ error:false,message:"role data",data: result });
         }
         ).catch(err => {
             if (err.name == 'CastError')
-                return res.status(404).json({ error:true,message: "id must be in integer format " });
-            return res.status(500).json({ error:true,message: err.message });
+                return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
     }
 
 
     destroy = (req, res) => {
         if (!req.policies.includes("delte_role")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findById(req.params.id).then(result => {
             if (result == null) {
-                return res.status(404).json({ error:true,message: "role doesn't exist" });
+                return res.status(404).json({ error: true, message: "role doesn't exist", data: {} });
             }
 
 
@@ -152,27 +152,27 @@ class rolesControllers {
                     isActive: isActive
                 }
             },
-                { upsert: true }).then(result => { return res.status(200).json({ error:false,message: "successfully deleted" }); });
+                { upsert: true }).then(result => { return res.status(200).json({ error: false, message: "successfully deleted", data: {} }); });
 
 
 
         }).catch(err => {
             if (err.name == 'CastError')
-                return res.status(404).json({ error:true,message: "id must be in integer format " });
-            return res.status(500).json({ error: true, message: err.message });
+                return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
+            return res.status(500).json({ error: true, message: err.message, data: {}});
         });
     }
 
 
     update = async (req, res) => {  
         if (!req.policies.includes("update_role")) {
-            return res.status(401).json({ error: true, message: "unauthorized access" });
+            return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findOne({ _id: req.params.id },).then(async(data) => {
 
             if (data == null) {
 
-                res.json({ msg: "role not exists" });
+                res.status(404).json({ error: true, msg: "role not exists", data: {} });
 
             } else {
                 let name, policyid, policies, display_name;
@@ -206,7 +206,7 @@ class rolesControllers {
                             }
 
                             if (notExist == true)
-                                return res.status(404).json({ error: true, message: "policies " + policyNotExist + " not exists" });
+                                return res.status(404).json({ error: true, message: "policies " + policyNotExist + " not exists", data: {}});
 
 
 
@@ -229,7 +229,7 @@ class rolesControllers {
 
                     }
                     else {
-                        return res.status(404).json({ error:true,message: "roles must have atleast one policy" });
+                        return res.status(404).json({ error: true, message: "roles must have atleast one policy", data: {} });
                     }
 
 
@@ -237,21 +237,21 @@ class rolesControllers {
 
                         if (req.body.name != undefined && req.body.name.toLowerCase() != data.name.toLowerCase()) {
 
-                            return res.status(404).json({ error:true,message: "can't update name of a role" });
+                            return res.status(404).json({ error: true, message: "can't update name of a role", data: {} });
                         }
        
                         name = req.body.name == undefined ? data.name : req.body.name.toLowerCase();
                  
                     }
                     else {
-                        return res.status(404).json({ error:true,message: "name field can't be empty" });
+                        return res.status(404).json({ error: true, message: "name field can't be empty", data: {} });
                     }
 
                     if (req.body.display_name != "") {
                         display_name = req.body.display_name == undefined ? data.display_name : req.body.display_name;
                     }
                     else {
-                        return res.status(404).json({ error:true,message: "display_name field can't be empty" });
+                        return res.status(404).json({ error: true, message: "display_name field can't be empty", data: {} });
                     }
 
 
@@ -259,7 +259,7 @@ class rolesControllers {
                     let answer = validations.updateValidations.validate(req.body);
 
                     if (answer.error) {
-                        return res.status(400).json({ error:true,message: answer.error.details[0].message });
+                        return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
                     }
 
 
@@ -283,9 +283,9 @@ class rolesControllers {
 
         ).catch(err => {
             if (err.name == 'CastError')
-                return res.status(404).json({ error: true, message: "id must be in integer format " });
+                return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
 
-            return res.status(500).json({ error: true, message: err.message });
+            return res.status(500).json({ error: true, message: err.message, data: {} });
         });
     };
 }
