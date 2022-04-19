@@ -8,34 +8,40 @@ class postAuth {
         var roleid, role, policies = [];
         await User.find({
             email: { $in: req.isemail }
-        }).then(result => {
+        }).then(async result => {
+
             if(result==""){
                 return res.status(404).json({error:true,message:" user not exists"});
+
             }
-         
+            console.log(result[0].isActive);
+            if (result[0].isActive == "false")
+                return res.status(401).json({ error: true, message: " user has been deleted" });
              roleid = result[0].roleid;
-             role=result[0].role;
+            role = result[0].role;
+
+            await Role.findOne({ _id: roleid }).then( result => {
+                // console.log(result);
+                if (result == null) {
+                    return res.status(404).json({ error: true, message: "role not exists" });
+                }
+
+                const policies = result.policies;
+                req.policies = policies;
+                next();
+
+
+            }).catch(err => {
+
+                return res.status(500).json({ error: true, message: err.message });
+            });
          
         }).catch(err => {
 
             return res.status(500).json({ error:true,message: err.message });
         });
       
-        await Role.findOne ({_id:roleid }).then(result => {
-           // console.log(result);
-            if(result==null){
-                return res.status(404).json({error:true,message:"role not exists"});
-            }
-           
-            const policies = result.policies;
-            req.policies = policies;
-            next();
-    
-            
-        }).catch(err => {
 
-            return res.status(500).json({ error:true,message: err.message });
-        });
        
     }
 
@@ -83,7 +89,10 @@ class postAuth {
                     else {
                         req.isemail = verify.email;
                         isemail = data.email;
-                        req.isid = data._id;
+                       req.isid = data._id;
+                       req.isActive = data.isActive;
+                       //if (req.isActive == "false")
+                       //    return res.status(401).json({ error: true, message: "user has been deleted" });
                     }
                     if ( verify.email == isemail) {
                         next();

@@ -15,12 +15,14 @@ class userAuth {
             email: { $in: req.isemail }
         }).then(async result => {
             if(result==""){
-                return res.status(404).json({error:true,message:" user not exists"});
+                return res.status(404).json({ error: true, message: " user not exists" });
+
             }
-           // console.log(result);
+            if (result[0].isActive == "false")
+                return res.status(401).json({ error: true, message: " user has been deleted" });
              roleid = result[0].roleid;
              role=result[0].role;
-          //  console.log(roleid);
+     
 
             await Role.findOne({ _id: roleid }).then(result => {
                 console.log(result);

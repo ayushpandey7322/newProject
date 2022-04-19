@@ -35,6 +35,8 @@ class postControllers {
         if (!req.policies.includes("show_post")) {
             return res.status(401).json({ error: true, message: "unauthorized access" });
         }
+        
+
         Post.find({ $or:
             [
             {
