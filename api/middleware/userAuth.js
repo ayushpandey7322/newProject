@@ -2,12 +2,15 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { User } = require('../model/userSchema');
 const { Role } = require('../model/rolesSchema');
-const { Policy } = require('../model/policySchema');
+const { Token } = require('../model/tokenSchema');
+
 class userAuth {
 
 
 
     rolesAuth = async (req, res, next) => {
+
+
 
         console.log("adf");
         var roleid, role, policies = [];
@@ -43,9 +46,7 @@ class userAuth {
 
             return res.status(500).json({ error: true, message: err.message, data: {}});
         });
-       // await Role.find().then(result=>{console.log(result);})
-      //  console.log(roleid);
-
+    
        
     }
 
@@ -58,7 +59,7 @@ class userAuth {
             if (data == null) {
                 return res.status(404).json({ error: true, message: "user not exists", data: {} });
             }
-            else {
+          
 
                 const token = req.headers.authorization.split(" ")[1];  
                 const verify = jwt.verify(token, process.env.TOKEN);
@@ -71,7 +72,7 @@ class userAuth {
                 else {
                     return res.status(401).json({ error: true, message: "not a verified user", data: {}});//  throw new Error("not a verified user");
                 }
-            }
+            
         }).catch(error => {
                 if (error.name != "TokenExpiredError") {
                     return res.status(401).json({ error: true, message: "invalid token", data: {} });
@@ -88,12 +89,25 @@ class userAuth {
         try {
             const token = req.headers.authorization.split(" ")[1];  
             const verify = jwt.verify(token, process.env.TOKEN);
-            if (verify.email) {
+            Token.findOne({ token: token }).then(result => {
+                if (result == null)
+                    return res.status(404).json({ error: true, message: "user not exists", data: {} });
+                if (result.status == "loggedOut")
+                    return res.status(401).json({ error: true, message: "logged out user", data: {} });
+                if (result.status == "blacklisted")
+                    return res.status(401).json({ error: true, message: "Blacklisted user", data: {} });
                 req.isemail = verify.email;
+                req.token = result;
                 next();
-            } else {
-                return res.status(404).json({ error: true, message: "user not exist", data: {} })
-            }
+            })
+            //if (verify.email) {
+            //    req.isemail = verify.email;
+            //    req.token = token;
+            //    next();
+            //} else {
+            //    return res.status(404).json({ error: true, message: "user not exist", data: {} });
+
+            //}
           
         } catch (error) {
            
@@ -112,7 +126,7 @@ class userAuth {
 
 
     
-
+    /*
     logedinUser = (req, res, next) => {
         console.log("ffks");
         User.findOne({ email: req.isemail },).then((data) => {
@@ -131,7 +145,7 @@ class userAuth {
             return res.status(500).json({ error: true, message: err.message, data: {}});
         });
     }
-    
+    */
 
 
 }

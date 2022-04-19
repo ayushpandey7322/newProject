@@ -7,11 +7,11 @@ const { postControllers } = require('../controllers/postControllers');
 const post = new postControllers;
 
 
-router.get('/posts', Auth.auth, Auth.verifyToken, Auth.rolesAuth, Auth.logedinUser, post.index);
-router.post('/posts', Auth.auth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser,  post.store);
-router.get('/posts/:id', Auth.auth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser,  post.show);
-router.put('/posts/:id', Auth.auth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser,  post.update);
-router.delete('/posts/:id', Auth.auth, Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, post.destroy);
+router.get('/posts', Auth.verifyToken, Auth.rolesAuth, Auth.auth,  post.index);
+router.post('/posts',  Auth.verifyToken, Auth.rolesAuth, Auth.auth, post.store);
+router.get('/posts/:id',  Auth.verifyToken, Auth.rolesAuth, Auth.auth,  post.show);
+router.put('/posts/:id',  Auth.verifyToken, Auth.rolesAuth, Auth.auth,  post.update);
+router.delete('/posts/:id', Auth.verifyToken, Auth.rolesAuth, Auth.auth, post.destroy);
 
 
 

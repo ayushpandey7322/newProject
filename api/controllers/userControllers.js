@@ -1,5 +1,6 @@
 const { User } = require('../model/userSchema');
 const { Role } = require('../model/rolesSchema');
+const { Token } = require('../model/tokenSchema');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
@@ -10,7 +11,7 @@ const validations = new userValidations;
 
 class userControllers {
     index = async(req, res, next) => {
-            if (!req.policies.includes("show_users")) {
+            if (!req.token.policies.includes("show_users")) {
                 return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
 
@@ -57,7 +58,7 @@ class userControllers {
 
 
     me = (req, res, next) => {
-        if (!req.policies.includes("show_me")) {
+        if (!req.token.policies.includes("show_me")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         User.findOne({ email: req.isemail }).then((data) => {
@@ -80,7 +81,7 @@ class userControllers {
 
 
     show = (req, res) => {
-        if (!req.policies.includes("show_users")) {
+        if (!req.token.policies.includes("show_users")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         User.findById({ _id: req.params.id }).then(result => {
@@ -104,30 +105,48 @@ class userControllers {
     };
 
 
-    destroy = (req, res) => {
-       // console.log("fa");
-        if (!req.policies.includes("delete_user")) {
+    destroy = async(req, res) => {
+        console.log("fa");
+        if (!req.token.policies.includes("delete_user")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
-        User.findById(req.params.id).then(result => {
+       // console.log(req.params.id);
+        await User.findOne({ _id: req.params.id }).then (async result => {
             if (result == null) {
                 return res.status(404).json({ error: true, message: "user not exists", data: {} });
             }
-      
-                    let isActive = result['isActive'] = "false";
-            
+           // console.log("destroy",result);
+            result.isActive = "false";
+            await result.save().then(result => {
+                return res.status(200).json({
+                    error: false, message: "successfully deleted", data: {}
+                });
+            });
+           await Token.find({
+               userid: { $in: result._id }
+           }).then(
+               data => {
+                   console.log(data);
+                   for (let i = 0; i < data.length; i++) {
+                       data[i].status = "blacklisted";
+                       data[i].save();
+                   }
+               })
+            /*
                     User.updateOne ({ _id: req.params.id }, {
                         $set: {
                             isActive: isActive
                         }
                     },
                         { upsert: true }).then(result => { res.status(200).json({ error: false, message: "successfully deleted", data: {} }) });
-
+                        */
 
         }).catch(err => {
-            if (err.name == 'CastError')
+            if (err.name == 'CastError') 
                 return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
-            return res.status(500).json({ error: true, message: err.message, data: {} })
+            return res.status(500).json({ error: true, message: err.message, data: {} });
+            
+            
         });
 
 
@@ -136,7 +155,7 @@ class userControllers {
 
 
     update = (req, res) => {
-        if (!req.policies.includes("update")) {
+        if (!req.token.policies.includes("update")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         User.findOne({ _id: req.params.id },).then ((data) => {
@@ -209,7 +228,7 @@ class userControllers {
 
 
     updatePassword = (req, res) => {
-        if (!req.policies.includes("update_password")) {
+        if (!req.token.policies.includes("update_password")) {
             return res.status(401).json({ error: true, message: "unauthorized access" });
         }
         User.findOne({ _id: req.params.id },).then((data) => {

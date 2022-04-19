@@ -8,7 +8,7 @@ const validation = new postValidation;
 
 class postControllers {
     store = (req, res) => {
-        if (!req.policies.includes("create_post")) {
+        if (!req.token.policies.includes("create_post")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
 
@@ -32,7 +32,7 @@ class postControllers {
     };
 
     index = (req, res, next) => {
-        if (!req.policies.includes("show_post")) {
+        if (!req.token.policies.includes("show_post")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         
@@ -64,7 +64,7 @@ class postControllers {
     };
 
     show = (req, res, next) => {
-        if (!req.policies.includes("show_post")) {
+        if (!req.token.policies.includes("show_post")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Post.findOne({ _id: req.params.id }).then(result => {
@@ -102,7 +102,7 @@ class postControllers {
 
 
     destroy = (req, res) => {
-        if (!req.policies.includes("delete_post")) {
+        if (!req.token.policies.includes("delete_post")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         Post.findById(req.params.id).then(result => {
@@ -126,15 +126,16 @@ class postControllers {
                 }
             }
         }).catch(err => {
-            if (err.name == 'CastError')
+            if (err.name == 'CastError') {
                 return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
+            }
             return res.status(500).json({ error: true, message: err.message, data: {} });
             });
     };
 
 
     update = (req, res) => {   
-        if (!req.policies.includes("update_post")) {
+        if (!req.token.policies.includes("update_post")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Post.findOne({ _id: req.params.id },).then((data) => {

@@ -8,7 +8,7 @@ const validations = new rolesValidations;
 
 class rolesControllers {
     store = async (req, res) => {
-        if (!req.policies.includes("create_role")) {
+        if (!req.token.policies.includes("create_role")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findOne({ name: req.body.name }).then (async(data) => {
@@ -86,7 +86,7 @@ class rolesControllers {
     };
 
     index = (req, res, next) => {
-        if (!req.policies.includes("show_role")) {
+        if (!req.token.policies.includes("show_role")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         let keys = Object.keys(req.query);
@@ -118,7 +118,7 @@ class rolesControllers {
 
 
     show = (req, res) => {
-        if (!req.policies.includes("show_role")) {
+        if (!req.token.policies.includes("show_role")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findById(req.params.id).then(result => {
@@ -136,7 +136,7 @@ class rolesControllers {
 
 
     destroy = (req, res) => {
-        if (!req.policies.includes("delte_role")) {
+        if (!req.token.policies.includes("delte_role")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findById(req.params.id).then(result => {
@@ -157,15 +157,16 @@ class rolesControllers {
 
 
         }).catch(err => {
-            if (err.name == 'CastError')
+            if (err.name == 'CastError') {
                 return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
+            }
             return res.status(500).json({ error: true, message: err.message, data: {}});
         });
     }
 
 
     update = async (req, res) => {  
-        if (!req.policies.includes("update_role")) {
+        if (!req.token.policies.includes("update_role")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Role.findOne({ _id: req.params.id },).then(async(data) => {

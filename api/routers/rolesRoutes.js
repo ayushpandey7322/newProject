@@ -8,10 +8,10 @@ const Auth = new userAuth;
 const { rolesControllers } = require('../controllers/rolesControllers');
 const roles = new rolesControllers;
 
-router.post('/roles', Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, roles.store);
-router.get('/roles', Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, roles.index);
-router.get('/roles/:id', Auth.verifyToken,Auth.rolesAuth,Auth.logedinUser, roles.show);
-router.delete('/roles/:id', Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, roles.destroy);
-router.put('/roles/:id', Auth.verifyToken, Auth.rolesAuth,Auth.logedinUser, roles.update);
+router.post('/roles', Auth.verifyToken, Auth.rolesAuth, roles.store);
+router.get('/roles', Auth.verifyToken, Auth.rolesAuth, roles.index);
+router.get('/roles/:id', Auth.verifyToken,Auth.rolesAuth, roles.show);
+router.delete('/roles/:id', Auth.verifyToken, Auth.rolesAuth, roles.destroy);
+router.put('/roles/:id', Auth.verifyToken, Auth.rolesAuth, roles.update);
 
 module.exports = router;

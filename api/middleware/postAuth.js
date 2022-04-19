@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { User } = require('../model/userSchema');
 const { Role } = require('../model/rolesSchema');
+const { Token } = require('../model/tokenSchema');
 class postAuth {
     
     rolesAuth = async (req, res,next) => {
@@ -46,16 +47,24 @@ class postAuth {
     }
 
     verifyToken = (req, res, next) => {
-        console.log("verify");
+        console.log("a");
         try {
             const token = req.headers.authorization.split(" ")[1];
             const verify = jwt.verify(token, process.env.TOKEN);
-            if (verify.email) {
+            console.log(token);
+            Token.findOne({ token: token }).then(result => {
+                console.log(result);
+                if (result == null)
+                    return res.status(404).json({ error: true, message: "user not exists", data: {} });
+                if (result.status == "loggedOut")
+                    return res.status(401).json({ error: true, message: "logged out user", data: {} });
+                if (result.status == "blacklisted")
+                    return res.status(401).json({ error: true, message: "Blacklisted user", data: {} });
                 req.isemail = verify.email;
+                req.token = result;
+                console.log(result);
                 next();
-            } else {
-                return res.status(404).json({ error: true, message: "user not exist", data: {}})
-            }
+            })
 
         } catch (error) {
 
@@ -63,38 +72,23 @@ class postAuth {
                 return res.status(401).json({ error: true, message: "invalid token", data: {} });
             }
             else {
-                return res.status(401).json({ error: true, message: error.message, data: {}});
+                return res.status(401).json({ error: true, message: error.message, data: {} });
             }
         }
 
     }
 
     auth = async(req, res, next) => {
-      
-            try {
                 let isemail;
-                console.log(req.headers.authorization);
-                //if (req.headers.authorization == "")
-                //    return res.status(404).json({ msg: "not a valid token" });
-                const token = req.headers.authorization.split(" ")[1];   
-                const verify = jwt.verify(token, process.env.TOKEN);
-                console.log(verify.email);
-                await User.findOne({ email: verify.email }).then((data) => {
-                    console.log(data);
+          
+                await User.findOne({ email: req.isemail }).then((data) => {
                     if (data == null)
                         return res.status(401).json({ error: true, message: "user not exists", data: {} });
-                   if (data['token'] == "") {
-                       return res.status(401).json({ error: true, message: "already logged out", data: {} });
-                    }
-                    else {
-                        req.isemail = verify.email;
+ 
                         isemail = data.email;
                        req.isid = data._id;
                        req.isActive = data.isActive;
-                       //if (req.isActive == "false")
-                       //    return res.status(401).json({ error: true, message: "user has been deleted" });
-                    }
-                    if ( verify.email == isemail) {
+                    if ( req.isemail == isemail) {
                         next();
                     } else {
 
@@ -103,36 +97,9 @@ class postAuth {
                }).catch(err => {
                    return res.status(500).json({ eror: true, message: err.message, data: {} });
                });
-            } catch (error) {
-          
-                if (error.name != "TokenExpiredError") {
-                    return res.status(401).json({ error: true, message: "invalid token", data: {} });  
-                }
-                else {
-                    return res.status(401).json({ error: true, message: error.message, data: {} });
-                }
-            }
 
     }
 
-    
-    logedinUser = (req, res, next) => {
-        User.findOne({ email: req.isemail },).then((data) => {
-            if (data == null) {
-                return res.status(404).json({ error: true, message: "user not exists", data: {} });
-            }
-            else {
-                if (data['token'] == "") {
-                    return res.status(401).json({ error: true, message: "user already logged out", data: {}});
-                }
-                else {
-                    next();
-                }
-            }
-        }).catch(err => {
-            return res.status(500).json({ error: true, message: err.message, data: {} });
-        });
-    }
     
 
 

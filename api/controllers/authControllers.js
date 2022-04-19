@@ -13,14 +13,14 @@ const validations = new authControllersValidation;
 class authControllers {
     createUsers = async (req, res) => {
 
-        if (req.body.roleid == 0 && !req.policies.includes("create_superadmin")) {
+        if (req.body.roleid == 0 && !req.token.policies.includes("create_superadmin")) {
 
             return res.status(401).json({ error: true, message: "unauthorized access" ,data: {} });
         }
-        if (req.body.roleid == 1 && !req.policies.includes("create_admin")) {
+        if (req.body.roleid == 1 && !req.token.policies.includes("create_admin")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
-        if (req.body.roleid == 2 && !req.policies.includes("create_user")) {
+        if (req.body.roleid == 2 && !req.token.policies.includes("create_user")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         User.findOne({ email: req.body.email }).then(async (data) => {
@@ -105,7 +105,10 @@ class authControllers {
                             policyid: policyid,
                             policies: policies
                         })
-                        await newToken.save();
+                        await newToken.save().catch(err => {
+
+                            return res.status(500).json({ error: true, message: err.message, data: {} });
+                        });
 
 
                     }
@@ -128,19 +131,19 @@ class authControllers {
 
         User.findOne({ _id: req.params.id },).then(async (data) => {
 
-            if (data.roleid == 0 && !req.policies.includes("update_superadmin")) {
+            if (data.roleid == 0 && !req.token.policies.includes("update_superadmin")) {
 
 
 
                 return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
             }
-            if (data.roleid == 1 && !req.policies.includes("update_admin")) {
+            if (data.roleid == 1 && !req.token.policies.includes("update_admin")) {
 
 
 
                 return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
             }
-            if (data.roleid == 2 && !req.policies.includes("update_user")) {
+            if (data.roleid == 2 && !req.token.policies.includes("update_user")) {
                 return res.status(401).json({ error: true, message: "unauthorized access", data:{} });
             }
 
@@ -251,7 +254,7 @@ class authControllers {
 
 
     createSuperAdmin = async (req, res,next) => {
-        User.find().then(async (data) => {
+        User.find().then (async (data) => {
             if (data != "") {
             
                 next();
@@ -303,23 +306,7 @@ class authControllers {
 
                     }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
 
-                let policyid, policies;
-                await Role.find({
-                    _id: { $in: userToken.roleid }
-                }).then(
-                    result => {
-                        policyid = result[0].policyid;
-                        policies = result[0].policies;
-                    })
 
-                const newToken = new Token({
-                    token: token,
-                    status: "active",
-                    userid: userToken._id,
-                    policyid: policyid,
-                    policies: policies
-                })
-                await newToken.save();
 
 
                     var myPolicies = [
@@ -348,34 +335,57 @@ class authControllers {
                         { name: "update_admin", display_name: "updateAdmin", description: "update admin" },
                     ];
 
-                    Policy.create(myPolicies, function (err, policy) {
+                   await Policy.create(myPolicies, function (err, policy) {
                         if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                     });
                 var myRole = { name: process.env.ROLE, display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] };
-                    Role.create(myRole, function (err, role) {
+                 await   Role.create(myRole, function (err, role) {
                         if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                     });
                 var adminRole = { name: "admin", display_name: "Admin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ,21], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_admin"] };
-                Role.create(adminRole, function (err, role) {
+               await Role.create(adminRole, function (err, role) {
                     if (err) return res.status(500).json({ error: true, message: err.message, data: {}});
 
                 });
                 var userRole = { name: "user", display_name: "User", policyid: [0, 1,4, 6, 7, 8, 9, 10, 11], policies: ["register_user", "create_user",  "update_password", "show_me", "update", "create_post", "update_post", "show_post", "delete_post" ] };
-                Role.create(userRole, function (err, role) {
+               await Role.create(userRole, function (err, role) {
                     if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
+               });
+
+                /*
+                let policyid, policies;
+                await Role.find({
+                    _id: { $in: userToken.roleid }
+                }).then(
+                    result => {
+                        policyid = result[0].policyid;
+                        policies = result[0].policies;
+                    })
+                    */
+
+                const newToken = new Token({
+                    token: token,
+                    status: "active",
+                    userid: userToken._id,
+                    policyid: myRole.policyid,
+                    policies: myRole.policies
+                })
+                await newToken.save().catch(err => {
+
+                    return res.status(500).json({ error: true, message: err.message, data: {} });
                 });
                 
-
+                
 
 
 
             })
 
         }
-        })
+        }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
         
     }
 
@@ -438,7 +448,10 @@ register = async (req, res) => {
                         policyid: policyid,
                         policies:policies
                     })
-                    await newToken.save();
+                    await newToken.save().catch(err => {
+
+                        return res.status(500).json({ error: true, message: err.message, data: {} });
+                    });
           
                 }
             })
@@ -454,9 +467,9 @@ register = async (req, res) => {
 };
 
 
-login = (req, res) => {
+login = async(req, res) => {
 
-    User.find({ email: req.body.email }).then(user => {
+    await User.find({ email: req.body.email }).then(async user => {
         let answer = validations.loginValidations.validate(req.body);
         if (answer.error) {
             return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {} });
@@ -466,7 +479,7 @@ login = (req, res) => {
             return res.status(401).json({ error: true, message: 'no user with this email', data: {} });
         }
 
-        bcrypt.compare(req.body.password, user[0].password, (err, result) => {
+        bcrypt.compare(req.body.password, user[0].password, async(err, result) => {
             if (!result) {
                 return res.status(401).json({ error: true, message: 'password matching fail', data: {} });
             }
@@ -474,7 +487,7 @@ login = (req, res) => {
 
                 const token = jwt.sign({ email: user[0].email }, process.env.TOKEN, { expiresIn: '6h' });
 
-                User.updateOne({ email: req.body.email.toLowerCase() },
+                await User.updateOne({ email: req.body.email.toLowerCase() },
                     {
                         $set:
                         {
@@ -483,7 +496,7 @@ login = (req, res) => {
                     },
                     { upsert: true }).then(result => {
                         res.status(201).json({
-                            error: false,message:"log in successfully", data: {
+                            error: false,message:"successfully login", data: {
                                 name: user[0].name,
                                 email: user[0].email,
                                 gender: user[0].gender,
@@ -491,6 +504,28 @@ login = (req, res) => {
                             }
                         })
                     });
+
+                let policyid, policies;
+                await Role.find({
+                    _id: { $in: user[0].roleid }
+                }).then(
+                    result => {
+                        policyid = result[0].policyid;
+                        policies = result[0].policies;
+                    })
+
+                const newToken = new Token({
+                    token: token,
+                    status: "active",
+                    userid: user[0]._id,
+                    policyid: policyid,
+                    policies: policies
+                })
+                await newToken.save().catch(err => {
+
+                    return res.status(500).json({ error: true, message: err.message, data: {} });
+                });
+
             }
         })
     }).catch(err => {
@@ -501,9 +536,26 @@ login = (req, res) => {
 
 
 
-logout = function (req, res) {
+    logout = function (req, res) {
+        Token.findOne({ token: req.token }).then((data) => {
+            if (data == null)
+                return res.status(404).json({ error: true, message: "user not exists", data: {} });
+            if (data.status == "loggedOut") 
+                return res.status(401).json({ error: true, message: "user has been already logged out", data: {} });
+            if (data.status == "blacklisted") 
+                return res.status(401).json({ error: true, message: "Blacklisted user", data: {} });
+            data.status = "loggedOut";
+            data.save().then(result => {
+                return res.status(200).json({ error: false, message: "successfully logged out", data: {} })
+            })
+        }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }); });
+
+
+        /*
 
     User.findOne({ email: req.isemail }).then((data) => {
+        if (data == null)
+            res.status(404).json({ error: true, message: "user not exists", data: {} });
         if (data['token'] == "") {
             res.status(401).json({ error: true, message: "already logged out", data: {} });
         }
@@ -516,8 +568,9 @@ logout = function (req, res) {
             );
         }
     }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }); });
+    */
+    };
 
-};
 }
 
 module.exports =  authControllers ;

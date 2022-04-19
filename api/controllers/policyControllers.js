@@ -7,7 +7,7 @@ const validations = new policyValidations;
 class policyControllers {
     store = async (req, res) => {
         
-        if (!req.policies.includes("create_policy")) {
+        if (!req.token.policies.includes("create_policy")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         await Policy.findOne({ name: req.body.name }).then (async(data) => {
@@ -47,7 +47,7 @@ class policyControllers {
 
 
     index = (req, res, next) => {
-        if (!req.policies.includes("show_policy")) {
+        if (!req.token.policies.includes("show_policy")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         let keys = Object.keys(req.query);
@@ -85,7 +85,7 @@ class policyControllers {
 
 
     show = (req, res) => {
-        if (!req.policies.includes("show_policy")) {
+        if (!req.token.policies.includes("show_policy")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Policy.findById(req.params.id).then(result => {
@@ -105,7 +105,7 @@ class policyControllers {
 
 
     destroy = (req, res) => {
-        if (!req.policies.includes("delete_policy")) {
+        if (!req.token.policies.includes("delete_policy")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         Policy.findById(req.params.id).then(result => {
@@ -126,15 +126,16 @@ class policyControllers {
             
 
         }).catch(err => {
-            if (err.name == 'CastError')
-                return res.status(404).json({ error: true, message: "id must be in integer format ", data: {}});
+            if (err.name == 'CastError') {
+                return res.status(404).json({ error: true, message: "id must be in integer format ", data: {} });
+            }
             return res.status(500).json({ error: true, message: err.message, data: {} });
             });
     }
 
 
     update = (req, res) => {   
-        if (!req.policies.includes("update_policy")) {
+        if (!req.token.policies.includes("update_policy")) {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {}});
         }
         Policy.findOne({ _id: req.params.id }).then((data) => {
