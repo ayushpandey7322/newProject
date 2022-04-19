@@ -70,20 +70,10 @@ class authControllers {
                             email: user.email,
                         }, process.env.TOKEN, { expiresIn: '6h' });
 
-                        const userToken = new User({
-                            name: req.body.name,
-                            email: req.body.email.toLowerCase(),
-                            password: hash,
-                            gender: req.body.gender.toLowerCase(),
-                            isActive: req.body.isActive,
-                            roleid: req.body.roleid,
-                            role: role,
-                            token: token,
-
-                        })
+                       
 
 
-                        userToken.save().then(result => {
+                        user.save().then(result => {
 
                             return res.status(201).json({ error: false,message:"new user created", data: result })
 
@@ -91,7 +81,7 @@ class authControllers {
 
                         let policyid, policies;
                         await Role.find({
-                            _id: { $in: userToken.roleid }
+                            _id: { $in: user.roleid }
                         }).then(
                             result => {
                                 policyid = result[0].policyid;
@@ -101,10 +91,12 @@ class authControllers {
                         const newToken = new Token({
                             token: token,
                             status: "active",
-                            userid: userToken._id,
+                            userid: user._id,
                             policyid: policyid,
-                            policies: policies
+                            policies: policies,
+                          //  expiryTime:Date.now()
                         })
+                       // console.log(newToken);
                         await newToken.save().catch(err => {
 
                             return res.status(500).json({ error: true, message: err.message, data: {} });
@@ -234,7 +226,7 @@ class authControllers {
                             gender: gender,
                             roleid: roleid,
                             role: role,
-                            token: data.token
+                           
                         }
 
                     },
@@ -286,21 +278,9 @@ class authControllers {
                         email: user.email,
                     }, process.env.TOKEN, { expiresIn: '6h' });
 
-               // console.log(token);
+              
 
-                    const userToken = new User({
-                        name: req.body.name,
-                        email: req.body.email.toLowerCase(),
-                        password: hash,
-                        gender: req.body.gender.toLowerCase(),
-                        roleid: roleid,
-                        role: role,
-                        isActive: req.body.isActive,
-                        token: token,
-
-                    })
-
-                    await userToken.save().then(result => {
+                    await user.save().then(result => {
                        
                         return res.status(201).json({ error: false,message:"super admin created", data: result })
 
@@ -355,21 +335,11 @@ class authControllers {
 
                });
 
-                /*
-                let policyid, policies;
-                await Role.find({
-                    _id: { $in: userToken.roleid }
-                }).then(
-                    result => {
-                        policyid = result[0].policyid;
-                        policies = result[0].policies;
-                    })
-                    */
 
                 const newToken = new Token({
                     token: token,
                     status: "active",
-                    userid: userToken._id,
+                    userid: user._id,
                     policyid: myRole.policyid,
                     policies: myRole.policies
                 })
@@ -417,17 +387,9 @@ register = async (req, res) => {
                         email: user.email,
                     }, process.env.TOKEN, { expiresIn: '6h' });
                   
-                    const userToken = new User({
-                        name: req.body.name,
-                        email: req.body.email.toLowerCase(),
-                        password: hash,
-                        gender: req.body.gender.toLowerCase(),
-                        isActive: req.body.isActive,
-                        token: token,
-
-                    })
+      
                  
-                    await userToken.save().then(result => {
+                    await user.save().then(result => {
       
                         return res.status(201).json({ error: false,message:"new user created", data: result })
 
@@ -435,7 +397,7 @@ register = async (req, res) => {
 
                     let policyid, policies;
                     await Role.find({
-                        _id: { $in: userToken.roleid }
+                        _id: { $in: user.roleid }
                     }).then(
                         result => {
                             policyid = result[0].policyid;
@@ -444,10 +406,12 @@ register = async (req, res) => {
                     const newToken = new Token({
                         token: token,
                         status: "active",
-                        userid: userToken._id,
+                        userid: user._id,
                         policyid: policyid,
-                        policies:policies
+                        policies: policies,
+                        expiryTime:currentTime()
                     })
+                    console.log(newToken);
                     await newToken.save().catch(err => {
 
                         return res.status(500).json({ error: true, message: err.message, data: {} });
@@ -495,14 +459,7 @@ login = async(req, res) => {
                         }
                     },
                     { upsert: true }).then(result => {
-                        res.status(201).json({
-                            error: false,message:"successfully login", data: {
-                                name: user[0].name,
-                                email: user[0].email,
-                                gender: user[0].gender,
-                                token: token
-                            }
-                        })
+                       return res.status(201).json({ error: false,message:"successfully login", data: {name: user[0].name,email: user[0].email,gender: user[0].gender,}})
                     });
 
                 let policyid, policies;

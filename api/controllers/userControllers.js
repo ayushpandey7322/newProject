@@ -206,7 +206,7 @@ class userControllers {
                             name: name,
                             email: email,
                             gender: gender,
-                            token: data.token
+                           
                         }
 
                     },

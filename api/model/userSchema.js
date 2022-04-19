@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema({
     password: String,
     gender: String,
     isActive: { type: String, default: "true" },
-    token: String,
     roleid: { type: Number,default:2, ref: Role },
     role: { type: String, default: "user", ref: Role },
   

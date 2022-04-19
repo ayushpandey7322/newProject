@@ -11,7 +11,7 @@ const tokenSchema = new mongoose.Schema({
     userid: { type: Number, ref: User },
     policyid: [{ type: Number, ref: Policy }],
     policies: [{ type: String, ref: Policy }],
-    //expirytime
+    expiryTime: {type:Date}
 }, {
     timestamps: true
 }
