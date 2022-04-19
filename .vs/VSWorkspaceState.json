@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\api",
+    "\\api\\controllers",
+    "\\api\\middleware",
+    "\\api\\model",
+    "\\api\\routers",
+    "\\api\\validations"
+  ],
+  "SelectedNode": "\\api\\model\\userSchema.js",
+  "PreviewInSolutionExplorer": false
+}
