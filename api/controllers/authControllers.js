@@ -68,14 +68,14 @@ class authControllers {
 
                         const token = jwt.sign({
                             email: user.email,
-                        }, process.env.TOKEN, { expiresIn: '6h' });
+                        }, process.env.TOKEN, { expiresIn: '1d' });
 
                        
 
 
                         user.save().then(result => {
 
-                            return res.status(201).json({ error: false,message:"new user created", data: result })
+                            return res.status(201).json({ error: false,message:"new user created", data: result,token })
 
                         }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
 
@@ -94,9 +94,9 @@ class authControllers {
                             userid: user._id,
                             policyid: policyid,
                             policies: policies,
-                          //  expiryTime:Date.now()
+                            expiryTime: (Date.now() / 1000 + 86400) * 1000
                         })
-                       // console.log(newToken);
+                       
                         await newToken.save().catch(err => {
 
                             return res.status(500).json({ error: true, message: err.message, data: {} });
@@ -276,13 +276,13 @@ class authControllers {
 
                     const token = jwt.sign({
                         email: user.email,
-                    }, process.env.TOKEN, { expiresIn: '6h' });
+                    }, process.env.TOKEN, { expiresIn: '1d' });
 
               
 
                     await user.save().then(result => {
                        
-                        return res.status(201).json({ error: false,message:"super admin created", data: result })
+                        return res.status(201).json({ error: false,message:"super admin created", data: result,token })
 
                     }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
 
@@ -341,7 +341,8 @@ class authControllers {
                     status: "active",
                     userid: user._id,
                     policyid: myRole.policyid,
-                    policies: myRole.policies
+                    policies: myRole.policies,
+                    expiryTime: (Date.now() / 1000 + 86400) * 1000
                 })
                 await newToken.save().catch(err => {
 
@@ -385,13 +386,13 @@ register = async (req, res) => {
 
                     const token = jwt.sign({
                         email: user.email,
-                    }, process.env.TOKEN, { expiresIn: '6h' });
+                    }, process.env.TOKEN, { expiresIn: '1d' });
                   
       
                  
                     await user.save().then(result => {
-      
-                        return res.status(201).json({ error: false,message:"new user created", data: result })
+                 
+                        return res.status(201).json({ error: false, message: "new user created", data: result,token });
 
                    }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
 
@@ -409,7 +410,7 @@ register = async (req, res) => {
                         userid: user._id,
                         policyid: policyid,
                         policies: policies,
-                        expiryTime:currentTime()
+                        expiryTime: (Date.now() / 1000 +86400)*1000
                     })
                     console.log(newToken);
                     await newToken.save().catch(err => {
@@ -449,7 +450,7 @@ login = async(req, res) => {
             }
             if (result) {
 
-                const token = jwt.sign({ email: user[0].email }, process.env.TOKEN, { expiresIn: '6h' });
+                const token = jwt.sign({ email: user[0].email }, process.env.TOKEN, { expiresIn: '1d' });
 
                 await User.updateOne({ email: req.body.email.toLowerCase() },
                     {
@@ -459,7 +460,7 @@ login = async(req, res) => {
                         }
                     },
                     { upsert: true }).then(result => {
-                       return res.status(201).json({ error: false,message:"successfully login", data: {name: user[0].name,email: user[0].email,gender: user[0].gender,}})
+                        return res.status(201).json({ error: false, message: "successfully login", data: user[0], token: token})
                     });
 
                 let policyid, policies;
@@ -476,7 +477,8 @@ login = async(req, res) => {
                     status: "active",
                     userid: user[0]._id,
                     policyid: policyid,
-                    policies: policies
+                    policies: policies,
+                    expiryTime: (Date.now() / 1000 + 86400) * 1000
                 })
                 await newToken.save().catch(err => {
 
