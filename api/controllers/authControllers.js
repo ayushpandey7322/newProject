@@ -24,8 +24,9 @@ class authControllers {
             return res.status(401).json({ error: true, message: "unauthorized access", data: {} });
         }
         User.findOne({ email: req.body.email }).then(async (data) => {
-            if (data == null) {
-
+            if (data != null) {
+                return res.status(400).json({ error: true, message: 'user already exists', data: {} });
+            }
                 let answer = validations.createUsersValidations.validate(req.body);
                 if (answer.error) {
                     return res.status(400).json({ error: true, message: answer.error.details[0].message, data: {}});
@@ -37,78 +38,81 @@ class authControllers {
                     else {
                         //////////////////////////////////////////////
                         var rolesIds = [];
-                        await Role.find().then(result => {
+                        await Role.find().then (async result => {
                             for (let i = 0; i < result.length; i++) {
                                 rolesIds.push(result[i]._id);
                             }
+
+                            if (!rolesIds.includes(req.body.roleid)) {
+                                return res.status(404).json({ error: true, message: "roleid " + req.body.roleid + " not exists", data: {} });
+                            }
+
+                            let role;
+                            await Role.find ({
+                                _id: { $in: req.body.roleid }
+                            }).then (async result => {
+                                if (result[0].isActive != true)
+                                    return res.status(404).json({ error: true, message: "role has been deleted", data: {} });
+                                role = result[0].name;
+
+                                const user = new User({
+
+                                    name: req.body.name,
+                                    email: req.body.email.toLowerCase(),
+                                    password: hash,
+                                    gender: req.body.gender.toLowerCase(),
+                                    isActive: req.body.isActive,
+                                    roleid: req.body.roleid,
+                                    role: role
+                                });
+                                await user.save().then (result => {
+
+                                    return res.status(201).json({ error: false, message: "new user created", data: result, token })
+
+                                }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
+
+
+                                const token = jwt.sign({
+                                    email: user.email,
+                                }, process.env.TOKEN, { expiresIn: '1d' });
+
+
+
+                                let policyid, policies;
+                                await Role.find({
+                                    _id: { $in: user.roleid }
+                                }).then(
+                                    result => {
+                                        policyid = result[0].policyid;
+                                        policies = result[0].policies;
+                                    })
+
+                                const newToken = new Token({
+                                    token: token,
+                                    status: "active",
+                                    userid: user._id,
+                                    policyid: policyid,
+                                    policies: policies,
+                                    expiryTime: (Date.now() / 1000 + 86400) * 1000
+                                })
+
+                                await newToken.save().catch(err => {
+
+                                    return res.status(500).json({ error: true, message: err.message, data: {} });
+                                });
+                            });
+
                         })
-                        if (!rolesIds.includes(req.body.roleid)) {
-                            return res.status(404).json({ erro: true, message: "roleid " + req.body.roleid + " not exists", data: {}});
-                        }
-                        //////////////////////////////////////
-                        let role;
-                        await Role.find({
-                            _id: { $in: req.body.roleid }
-                        }).then(result => {
-                            role = result[0].name;
-
-                        });
-
-                        const user = new User({
-
-                            name: req.body.name,
-                            email: req.body.email.toLowerCase(),
-                            password: hash,
-                            gender: req.body.gender.toLowerCase(),
-                            isActive: req.body.isActive,
-                            roleid: req.body.roleid,
-                            role: role
-                        });
 
 
-                        const token = jwt.sign({
-                            email: user.email,
-                        }, process.env.TOKEN, { expiresIn: '1d' });
-
-                       
-
-
-                        user.save().then(result => {
-
-                            return res.status(201).json({ error: false,message:"new user created", data: result,token })
-
-                        }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
-
-                        let policyid, policies;
-                        await Role.find({
-                            _id: { $in: user.roleid }
-                        }).then(
-                            result => {
-                                policyid = result[0].policyid;
-                                policies = result[0].policies;
-                            })
-
-                        const newToken = new Token({
-                            token: token,
-                            status: "active",
-                            userid: user._id,
-                            policyid: policyid,
-                            policies: policies,
-                            expiryTime: (Date.now() / 1000 + 86400) * 1000
-                        })
-                       
-                        await newToken.save().catch(err => {
-
-                            return res.status(500).json({ error: true, message: err.message, data: {} });
-                        });
 
 
                     }
                 })
-            }
-            else {
-                return res.status(400).json({ error: true, message: 'user already exists', data: {}});
-            }
+            //}
+            //else {
+            //    return res.status(400).json({ error: true, message: 'user already exists', data: {}});
+            //}
         }
         ).catch(err => {
 
@@ -159,6 +163,8 @@ class authControllers {
                             for (let i = 0; i < result.length; i++) {
                                 rolesIds.push(result[i]._id);
                             }
+
+
                         })
 
                         if (!rolesIds.includes(req.body.roleid)) {
@@ -170,11 +176,13 @@ class authControllers {
                         await Role.find({
                             _id: { $in: req.body.roleid }
                         }).then(result => {
+                            if (result[0].isActive==true)
                             role = result[0].name;
-
+                            console.log(role);
                         });
-
-
+                        console.log(role);
+                        if (role == undefined)
+                            return res.status(400).json({message: "role has been deleted"});
 
                     }
 
@@ -410,8 +418,9 @@ register = async (req, res) => {
                         userid: user._id,
                         policyid: policyid,
                         policies: policies,
-                        expiryTime: (Date.now() / 1000 +86400)*1000
+                        //expiryTime: (Date.now() / 1000 +86400)*1000
                     })
+                   
                     console.log(newToken);
                     await newToken.save().catch(err => {
 
@@ -503,6 +512,7 @@ login = async(req, res) => {
                 return res.status(401).json({ error: true, message: "user has been already logged out", data: {} });
             if (data.status == "blacklisted") 
                 return res.status(401).json({ error: true, message: "Blacklisted user", data: {} });
+
             data.status = "loggedOut";
             data.save().then(result => {
                 return res.status(200).json({ error: false, message: "successfully logged out", data: {} })

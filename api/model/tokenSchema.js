@@ -11,11 +11,11 @@ const tokenSchema = new mongoose.Schema({
     userid: { type: Number, ref: User },
     policyid: [{ type: Number, ref: Policy }],
     policies: [{ type: String, ref: Policy }],
-    expiryTime: {type:Date}
-}, {
-    timestamps: true
-}
+    
+}, { timestamps:true} 
 );
+
+
 tokenSchema.plugin(autoIncrement.plugin, 'Token');
 const Token = mongoose.model('Token', tokenSchema);
 module.exports = { Token: Token };

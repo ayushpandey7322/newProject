@@ -7,8 +7,6 @@ require('dotenv').config();
 const userValidations= require('../validations/userValidation');
 const validations = new userValidations;
 
-
-
 class userControllers {
     index = async(req, res, next) => {
             if (!req.token.policies.includes("show_users")) {
@@ -42,19 +40,6 @@ class userControllers {
                 return res.status(500).json({ error: true, message: err.message, data: {} });
             });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     me = (req, res, next) => {
