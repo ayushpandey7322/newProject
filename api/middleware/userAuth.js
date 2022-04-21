@@ -17,7 +17,8 @@ class userAuth {
         await User.find({
             email: { $in: req.isemail }
         }).then(async result => {
-            if(result==""){
+            if (result == "") {
+                console.log("result", result);
                 return res.status(404).json({ error: true, message: " user not exists", data: {} });
 
             }
@@ -25,7 +26,7 @@ class userAuth {
                 return res.status(401).json({ error: true, message: " user has been deleted", data: {} });
              roleid = result[0].roleid;
              role=result[0].role;
-     
+            console.log("roleid", roleid);
 
             await Role.findOne({ _id: roleid }).then(result => {
                 console.log(result);

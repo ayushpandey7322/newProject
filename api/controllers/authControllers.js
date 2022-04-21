@@ -298,46 +298,46 @@ class authControllers {
 
 
                     var myPolicies = [
-                        { name: "register_user", display_name: "registerUser", description: "register user" },
-                        { name: "create_user", display_name: "createUser", description: "create user" },
-                        { name: "update_user", display_name: "updateUser", description: "update user" },
-                        { name: "delete_user", display_name: "deleteUser", description: "display user" },
-                        { name: "update_password", display_name: "updatePassword", description: "update user Password" },
-                        { name: "show_users", display_name: "showUsers", description: "show users" },
-                        { name: "show_me", display_name: "showMe", description: "show me" },
-                        { name: "update", display_name: "Update", description: "update" },
-                        { name: "create_post", display_name: "createPost", description: "create post" },
-                        { name: "update_post", display_name: "updatePost", description: "update post" },
-                        { name: "show_post", display_name: "showPoste", description: "show post" },
-                        { name: "delete_post", display_name: "deletPost", description: "display name" },
-                        { name: "create_policy", display_name: "createPolicy", description: "create policy" },
-                        { name: "update_policy", display_name: "updatePolicy", description: "update policy" },
-                        { name: "show_policy", display_name: "showPolicy", description: "show policy" },
-                        { name: "delete_policy", display_name: "deletePolicy", description: "delete policy" },
-                        { name: "create_role", display_name: "createRole", description: "create role" },
-                        { name: "update_role", display_name: "updatRole", description: "update role" },
-                        { name: "show_role", display_name: "showRole", description: "show role" },
-                        { name: "delete_role", display_name: "deleteRole", description: "delet role" },
-                        { name: "create_superadmin", display_name: "createSuperadmin", description: "create superadmin" },
-                        { name: "create_admin", display_name: "createAdmin", description: "create admin" },
-                        { name: "update_admin", display_name: "updateAdmin", description: "update admin" },
+                        {_id:0, name: "register_user", display_name: "registerUser", description: "register user" },
+                        {_id:1, name: "create_user", display_name: "createUser", description: "create user" },
+                        { _id:2,name: "update_user", display_name: "updateUser", description: "update user" },
+                        { _id:3,name: "delete_user", display_name: "deleteUser", description: "display user" },
+                        { _id:4,name: "update_password", display_name: "updatePassword", description: "update user Password" },
+                        { _id:5,name: "show_users", display_name: "showUsers", description: "show users" },
+                        {_id:6, name: "show_me", display_name: "showMe", description: "show me" },
+                        { _id:7,name: "update", display_name: "Update", description: "update" },
+                        { _id:8,name: "create_post", display_name: "createPost", description: "create post" },
+                        { _id:9,name: "update_post", display_name: "updatePost", description: "update post" },
+                        { _id:10,name: "show_post", display_name: "showPoste", description: "show post" },
+                        { _id:11,name: "delete_post", display_name: "deletPost", description: "display name" },
+                        { _id:12,name: "create_policy", display_name: "createPolicy", description: "create policy" },
+                        { _id:13,name: "update_policy", display_name: "updatePolicy", description: "update policy" },
+                        { _id:14,name: "show_policy", display_name: "showPolicy", description: "show policy" },
+                        { _id:15,name: "delete_policy", display_name: "deletePolicy", description: "delete policy" },
+                        { _id:16,name: "create_role", display_name: "createRole", description: "create role" },
+                        { _id:17,name: "update_role", display_name: "updatRole", description: "update role" },
+                        { _id:18,name: "show_role", display_name: "showRole", description: "show role" },
+                        {_id:19, name: "delete_role", display_name: "deleteRole", description: "delet role" },
+                        { _id:20,name: "create_superadmin", display_name: "createSuperadmin", description: "create superadmin" },
+                        { _id:21,name: "create_admin", display_name: "createAdmin", description: "create admin" },
+                        {_id:22, name: "update_admin", display_name: "updateAdmin", description: "update admin" },
                     ];
 
                    await Policy.create(myPolicies, function (err, policy) {
                         if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                     });
-                var myRole = { name: process.env.ROLE, display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] };
+                var myRole = { _id:0,name: process.env.ROLE, display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] };
                  await   Role.create(myRole, function (err, role) {
                         if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                     });
-                var adminRole = { name: "admin", display_name: "Admin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ,21], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_admin"] };
+                var adminRole = {_id:1, name: "admin", display_name: "Admin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ,21], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_admin"] };
                await Role.create(adminRole, function (err, role) {
                     if (err) return res.status(500).json({ error: true, message: err.message, data: {}});
 
                 });
-                var userRole = { name: "user", display_name: "User", policyid: [0, 1,4, 6, 7, 8, 9, 10, 11], policies: ["register_user", "create_user",  "update_password", "show_me", "update", "create_post", "update_post", "show_post", "delete_post" ] };
+                var userRole = { _id:2,name: "user", display_name: "User", policyid: [0, 1,4, 6, 7, 8, 9, 10, 11], policies: ["register_user", "create_user",  "update_password", "show_me", "update", "create_post", "update_post", "show_post", "delete_post" ] };
                await Role.create(userRole, function (err, role) {
                     if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
