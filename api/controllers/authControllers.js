@@ -65,18 +65,20 @@ class authControllers {
                                     roleid: req.body.roleid,
                                     role: role
                                 });
+
+                                const token = jwt.sign({
+                                    email: user.email,
+                                }, process.env.TOKEN, { expiresIn: '1d' });
+
+                                console.log(token);
+
                                 await user.save().then (result => {
 
                                     return res.status(201).json({ error: false, message: "new user created", data: result, token })
 
                                 }).catch(err => { return res.status(500).json({ error: true, message: err.message, data: {} }) });
 
-
-                                const token = jwt.sign({
-                                    email: user.email,
-                                }, process.env.TOKEN, { expiresIn: '1d' });
-
-
+                             
 
                                 let policyid, policies;
                                 await Role.find({
@@ -93,8 +95,9 @@ class authControllers {
                                     userid: user._id,
                                     policyid: policyid,
                                     policies: policies,
-                                    expiryTime: (Date.now() / 1000 + 86400) * 1000
+                                    
                                 })
+                                
 
                                 await newToken.save().catch(err => {
 
