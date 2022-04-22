@@ -53,6 +53,7 @@ class authControllers {
                             }).then (async result => {
                                 if (result[0].isActive != true)
                                     return res.status(404).json({ error: true, message: "role has been deleted", data: {} });
+                                console.log("superadmin",result);
                                 role = result[0].name;
 
                                 const user = new User({
@@ -330,7 +331,7 @@ class authControllers {
                         if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 
                     });
-                var myRole = { _id:0,name: process.env.ROLE, display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] };
+                var myRole = { _id:0,name: "superadmin", display_name: "superAdmin", policyid: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], policies: ["register_user", "create_user", "update_user", "delete_user", "update_password", "show_users", "show_me", "update", "create_post", "update_post", "show_post", "delete_post", "create_policy", "update_policy", "show_policy", "delete_policy", "create_role", "update_role", "show_role", "delete_role", "create_superadmin", "create_admin", "update_admin"] };
                  await   Role.create(myRole, function (err, role) {
                         if (err) return res.status(500).json({ error: true, message: err.message, data: {} });
 

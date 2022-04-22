@@ -8,6 +8,6 @@
     "\\api\\routers",
     "\\api\\validations"
   ],
-  "SelectedNode": "\\api\\routers\\authRoutes.js",
+  "SelectedNode": "\\api\\controllers\\authControllers.js",
   "PreviewInSolutionExplorer": false
 }
